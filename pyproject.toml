@@ -1,0 +1,93 @@
+[project]
+name = "sophie_bot"
+version = "4.1.5"
+description = "Sophie is modern and fast Telegram chat manager bot"
+authors = [{ name = "Yacha", email = "yacha@orangefox.tech" }]
+requires-python = ">=3.12,<4"
+dependencies = [
+    "aiogram>=3.21,<4",
+    "redis>=7,<8",
+    "dnspython>=2.1.0,<3",
+    "ujson>=5.1.0,<6",
+    "PyYAML>=6.0,<7",
+    "sentry-sdk>=2,<3",
+    "Babel>=2.9.1,<3",
+    "async-timeout>=5,<6",
+    "regex>=2026",
+    "pydantic>=2,<3",
+    "emoji-country-flag>=2,<3",
+    "pydantic-settings>=2,<3",
+    "structlog>=25,<26",
+    "stfu-tg>=3.4,<4",
+    "ass-tg",
+    "beanie>=2,<3",
+    "numpy>=2,<3",
+    "pillow>=12,<13",
+    "mem-top>=0.2.1,<0.3",
+    "apscheduler>=3.11.2,<4",
+    "fastapi>=0.128,<0.136",
+    "uvicorn>=0.41,<0.43",
+    "prometheus-client>=0.24,<0.25",
+    "uvloop>=0.22.1,<0.23; sys_platform != 'win32'",
+    "unidecode>=1.4.0,<2",
+    "pyjwt>=2.12.1,<3",
+    "link>=2.1.4,<3",
+    "init-data-py>=0.2.7,<0.3",
+    "ty>=0.0.12",
+    #    "normality>=3.0.2 != 'win32'",
+    #    "av>=14,<15 != 'win32'",
+    "lingua-language-detector>=2.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "Nuitka>=4",
+    "pycln>=2.1,<3",
+    "bandit>=1.7,<2",
+    "ruff>=0.15",
+    "devtools[pygments]>=0.12,<0.13",
+    "types-ujson>=5.10.0.20240515,<6",
+    "types-pytz>=2025,<2026",
+    "pytest-asyncio>=1.3.0,<2",
+    "pytest-xdist>=3.5,<4",
+    "allure-pytest>=2.13.5,<3",
+    "pytest>=9.0.2,<10",
+    "fakeredis>=2.27.0,<3",
+    "ty>=0.0.23",
+    "babel>=2.17.0",
+    "watchfiles>=1.0.0,<2",
+    "mongomock>=4.3.0,<5",
+    "aiogram-test-framework>=1.0.1",
+]
+
+[tool.uv.sources]
+stfu-tg = { path = "./libs/stf" }
+ass-tg = { path = "./libs/ass" }
+
+[tool.ty.src]
+include = ["sophie_bot/**"]
+exclude = ["**/legacy_modules/**", "**/legacy_*.py"]
+
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.pytest.ini_options]
+pythonpath = "."
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sophie_bot*"]

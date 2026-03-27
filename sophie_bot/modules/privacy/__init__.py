@@ -1,0 +1,51 @@
+from types import ModuleType
+
+from aiogram import Router
+from stfu_tg import Doc
+
+from sophie_bot.utils.i18n import LazyProxy
+from sophie_bot.utils.i18n import lazy_gettext as l_
+
+from ...filters.chat_status import ChatTypeFilter
+from ...filters.cmd import CMDFilter
+from sophie_bot.modules import LOADED_MODULES
+from .callbacks import PrivacyMenuCallback
+from .handlers.export import EXPORTABLE_MODULES, TriggerExport, TriggerDeleteData
+from .handlers.privacy import PrivacyMenu, PrivacyPolicyMenu, PrivacyPolicySection
+
+router = Router(name="info")
+
+
+__module_name__ = l_("Privacy")
+__module_emoji__ = "🕵️‍♂️️"
+__module_description__ = l_("Data protection")
+__module_info__ = LazyProxy(
+    lambda: Doc(
+        l_("Manages user privacy and data protection settings."),
+        l_("Allows users to export their data and control privacy preferences."),
+    )
+)
+
+
+async def __pre_setup__():
+    router.message.register(PrivacyMenu, CMDFilter("privacy"), ChatTypeFilter("private"))
+    router.callback_query.register(PrivacyMenu, PrivacyMenuCallback.filter())
+
+    from .callbacks import PrivacyPolicyCallback, PrivacyPolicySectionCallback
+
+    router.callback_query.register(PrivacyPolicyMenu, PrivacyPolicyCallback.filter())
+    router.callback_query.register(PrivacyPolicySection, PrivacyPolicySectionCallback.filter())
+
+    router.message.register(TriggerExport, CMDFilter("export"), ChatTypeFilter("private"))
+
+    from .callbacks import PrivacyRetrieveDataCallback, PrivacyDeleteDataCallback
+
+    router.callback_query.register(TriggerExport, PrivacyRetrieveDataCallback.filter())
+    router.callback_query.register(TriggerDeleteData, PrivacyDeleteDataCallback.filter())
+
+
+async def __post_setup__(modules: dict[str, ModuleType]):
+    extra_modules = LOADED_MODULES.values() if isinstance(LOADED_MODULES, dict) else LOADED_MODULES
+    for module in (*modules.values(), *extra_modules):
+        if hasattr(module, "__export__"):
+            EXPORTABLE_MODULES.append(module)

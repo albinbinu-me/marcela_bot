@@ -1,0 +1,58 @@
+variables:
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+  UV_LINK_MODE: copy
+
+# Base template for all test jobs
+.test-base:
+  image: python:3.13-slim
+  cache:
+    - key: uv-cache-${CI_COMMIT_REF_SLUG}
+      paths:
+        - .cache/uv
+      policy: pull-push
+    - key: venv-cache-$CI_COMMIT_REF_SLUG
+      paths:
+        - .venv
+      policy: pull-push
+  before_script:
+    # Install system dependencies required for PyAV source builds on Python 3.13
+    - apt-get update && apt-get install -y --no-install-recommends make git pkg-config libicu-dev g++ ffmpeg libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libavfilter-dev libswscale-dev libswresample-dev
+    # Clone/update libs - force remove any existing libs (file or dir) first
+    - rm -rf libs 2>/dev/null || rm -f libs 2>/dev/null || true
+    - mkdir -p libs
+    - git clone --depth 1 https://gitlab.com/SophieBot/stf.git libs/stf
+    - git clone --depth 1 https://gitlab.com/SophieBot/ass.git libs/ass
+    # Install uv
+    - pip install uv
+    # Sync dependencies (uses cache, very fast if unchanged)
+    - uv sync --dev --frozen
+
+test-codestyle:
+  extends: .test-base
+  stage: test
+  script:
+    - uv run pycln . -a -c
+    - uv run ruff format sophie_bot/ --check
+    - uv run ruff check .
+
+test-codeanal:
+  extends: .test-base
+  stage: test
+  script:
+    - uv run ty check
+
+test-code:
+  extends: .test-base
+  stage: test
+  variables:
+    TOKEN: "123456:test"
+  script:
+    # Compile locales for tests
+    - uv run pybabel compile -d locales -D sophie --use-fuzzy
+    # Run tests in parallel using all available CPU cores
+    - uv run pytest tests/ -v --alluredir=allure_results -x -n auto
+  artifacts:
+    when: always
+    paths:
+      - allure_results
+    expire_in: 1 day

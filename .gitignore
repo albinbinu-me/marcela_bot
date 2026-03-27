@@ -1,0 +1,45 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Config
+data/config.env
+
+# Ansible inv
+data/*.yaml
+
+# Virtual envirment
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# Jetbrains Junie
+*.txt
+
+# Localization
+sophie.mo
+
+# Test coverage results
+allure_results/
+
+# Build
+output/
+
+# OpenAPI
+openapi.json
+
+# Libs
+libs/
+
+*.egg-info/
+
+.junie/
+
+# others
+
+.pytest_cache/
+.ruff_cache/
+.zed/

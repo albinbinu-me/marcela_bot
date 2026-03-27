@@ -1,0 +1,31 @@
+- name: Set vars for Staging
+  set_fact:
+    token: "{{ lookup('env', 'BETA_TOKEN') }}"
+    username: "{{ lookup('env', 'BETA_USERNAME') }}"
+    sentry_url: "{{ lookup('env', 'STAGING_SENTRY') }}"
+    mistral_key: "{{ lookup('env', 'MISTRAL_API_KEY') }}"
+    openrouter_api_key: "{{ lookup('env', 'OPENROUTER_API_KEY') }}"
+    api_jwt_secret: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+    api_operator_token: "{{ lookup('env', 'STAGING_API_OPERATOR_TOKEN') }}"
+    api_cors_origins: "{{ lookup('env', 'STAGING_API_CORS_ORIGINS') | from_yaml | to_json }}"
+    mongo_host: "mongodb://host.containers.internal:27017"
+    redis_username: "None"
+    redis_password: "None"
+    role: "staging"
+  when: inventory_hostname == "sstaging"
+
+- name: Set vars for Prod
+  set_fact:
+    token: "{{ lookup('env', 'STABLE_TOKEN') }}"
+    username: "{{ lookup('env', 'STABLE_USERNAME') }}"
+    sentry_url: "{{ lookup('env', 'PROD_STABLE_SENTRY') }}"
+    mistral_key: "{{ lookup('env', 'MISTRAL_API_KEY') }}"
+    openrouter_api_key: "{{ lookup('env', 'OPENROUTER_API_KEY') }}"
+    api_jwt_secret: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+    api_operator_token: "{{ lookup('env', 'STABLE_API_OPERATOR_TOKEN') }}"
+    api_cors_origins: "{{ lookup('env', 'STABLE_API_CORS_ORIGINS') | from_yaml | to_json }}"
+    mongo_host: "{{ lookup('env', 'STABLE_MONGO_HOST') }}"
+    redis_username: "{{ lookup('env', 'STABLE_REDIS_USERNAME') }}"
+    redis_password: "{{ lookup('env', 'STABLE_REDIS_PASSWORD') }}"
+    role: "production"
+  when: inventory_hostname in ["white", "sophie-turquoise"]
