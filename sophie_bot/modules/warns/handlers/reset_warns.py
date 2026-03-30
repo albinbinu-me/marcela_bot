@@ -17,7 +17,10 @@ from ..callbacks import ResetWarnsCallback
 from .warns import optional_user
 
 
-@flags.help(description=l_("Resets all warnings of a user in the current chat."))
+@flags.help(
+    description=l_("Resets all warnings of a user in the current chat."),
+    example=l_("/resetwarns @user — clear all warns for that user\n/resetwarns (reply to message)"),
+)
 class ResetWarnsHandler(SophieMessageHandler):
     @staticmethod
     def filters():

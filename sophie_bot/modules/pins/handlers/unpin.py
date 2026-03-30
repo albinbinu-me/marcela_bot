@@ -13,7 +13,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Unpins message"))
+@flags.help(
+    description=l_("Unpins message"),
+    example=l_("/unpin — unpin the latest pinned message\n/unpin (reply) — unpin specific message\n/unpin all — remove all pins"),
+)
 class UnpinHandler(SophieMessageHandler):
     @staticmethod
     def filters():
@@ -33,8 +36,9 @@ class UnpinHandler(SophieMessageHandler):
         message = self.event
         chat_id = message.chat.id
 
-        if self.data["args"]["all"]:
+        if (self.data.get("args") or {}).get("all"):
             await bot.unpin_all_chat_messages(chat_id)
+            await message.reply(_("📌 Unpinned all messages."))
             return
 
         # If unpinning a specific message
@@ -44,9 +48,12 @@ class UnpinHandler(SophieMessageHandler):
 
         try:
             await bot.unpin_chat_message(chat_id, message_id=message_id)
-        except TelegramBadRequest as e:
-            # Handle "chat not modified" or "message is not pinned"
-            if "not modified" in str(e) or "not pinned" in str(e):
+            if message.reply_to_message:
+                await message.reply(_("📌 Unpinned that message."))
+            else:
+                await message.reply(_("📌 Unpinned the latest pinned message."))
+        except TelegramBadRequest as exc:
+            if "not modified" in str(exc) or "not pinned" in str(exc):
                 await message.reply(_("The message is not pinned."))
             else:
                 raise

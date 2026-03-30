@@ -15,8 +15,10 @@ from sophie_bot.modules.help.callbacks import (
     PMHelpModules,
     PMHelpStartUrlCallback,
     PMHelpQueryStartUrlCallback,
+    PMHelpCommandExample,
+    PMHelpModuleExamples,
 )
-from sophie_bot.modules.help.utils.extract_info import HELP_MODULES, get_aliased_cmds
+from sophie_bot.modules.help.utils.extract_info import HELP_MODULES, get_aliased_cmds, get_all_cmds
 from sophie_bot.modules.help.utils.format_help import format_handlers, group_handlers, format_handler
 from sophie_bot.utils.handlers import SophieMessageCallbackQueryHandler
 from sophie_bot.utils.exception import SophieException
@@ -56,6 +58,7 @@ class PMModulesList(SophieMessageCallbackQueryHandler):
             ),
             width=2,
         )
+
 
         if callback_data and callback_data.back_to_start:
             buttons.row(InlineKeyboardButton(text=_("Back"), callback_data="go_to_start", style="primary"))
@@ -124,6 +127,15 @@ class PMModuleHelp(CallbackQueryHandler):
                 style="primary",
             )
         )
+
+        # Show Examples button if any command in this module has an example
+        if any(h.example for h in cmds):
+            buttons.row(
+                InlineKeyboardButton(
+                    text=_("💡 Show Examples"),
+                    callback_data=PMHelpModuleExamples(module_name=module_name).pack(),
+                )
+            )
 
         if not self.event.message or not isinstance(self.event.message, Message):
             raise SophieException("Message not found or inaccessible")
@@ -194,11 +206,22 @@ class PMHelpQuery(SophieMessageCallbackQueryHandler):
                 buttons = InlineKeyboardBuilder()
                 buttons.row(
                     InlineKeyboardButton(
-                        text=_("Back"),
+                        text=_("⬅️ Back"),
                         callback_data=PMHelpModules(back_to_start=True).pack(),
-                        style="primary",
-                    )
+                    ),
+                    InlineKeyboardButton(
+                        text=_("📋 Help Menu"),
+                        callback_data=PMHelpModules(back_to_start=False).pack(),
+                    ),
                 )
+                # Show Examples button if any command has an example
+                if any(h.example for h in cmds):
+                    buttons.row(
+                        InlineKeyboardButton(
+                            text=_("💡 Show Examples"),
+                            callback_data=PMHelpModuleExamples(module_name=module_name).pack(),
+                        )
+                    )
 
                 return await self.answer(str(doc), reply_markup=buttons.as_markup())
 
@@ -220,16 +243,114 @@ class PMHelpQuery(SophieMessageCallbackQueryHandler):
                 format_handler(matched_cmd, show_only_in_groups=True, show_disable_able=True),
             )
 
+            # Find which module this command belongs to
+            owner_module_name: Optional[str] = None
+            for mod_name, mod in HELP_MODULES.items():
+                if any(matched_cmd is h for h in mod.handlers):
+                    owner_module_name = mod_name
+                    break
+
             buttons = InlineKeyboardBuilder()
             buttons.row(
                 InlineKeyboardButton(
-                    text=_("Back"),
+                    text=_("⬅️ Back"),
                     callback_data=PMHelpModules(back_to_start=True).pack(),
-                    style="primary",
-                )
+                ),
+                InlineKeyboardButton(
+                    text=_("📋 Help Menu"),
+                    callback_data=PMHelpModules(back_to_start=False).pack(),
+                ),
             )
+            if owner_module_name:
+                buttons.row(
+                    InlineKeyboardButton(
+                        text=_("🔍 Explore Module"),
+                        callback_data=PMHelpModule(
+                            module_name=owner_module_name, back_to_start=False
+                        ).pack(),
+                    )
+                )
+            if matched_cmd.example:
+                buttons.row(
+                    InlineKeyboardButton(
+                        text=_("💡 Show Example"),
+                        callback_data=PMHelpCommandExample(cmd=matched_cmd.cmds[0]).pack(),
+                    )
+                )
 
             return await self.answer(str(doc), reply_markup=buttons.as_markup())
 
         error_doc = Template(_("{query} command not found refer /help to view all commands"), query=query)
         await self.answer(str(error_doc))
+
+
+@flags.help(exclude=True)
+class PMCommandExampleHandler(CallbackQueryHandler):
+    """Shows the usage example for a specific command when the 💡 Show Example button is tapped."""
+
+    @classmethod
+    def register(cls, router: Router):
+        router.callback_query.register(cls, PMHelpCommandExample.filter())
+
+    async def handle(self) -> Any:
+        cb: PMHelpCommandExample = self.data["callback_data"]
+        cmd_name = cb.cmd
+
+        matched = next((h for h in get_all_cmds() if cmd_name in h.cmds), None)
+
+        if not matched or not matched.example:
+            await self.event.answer(_("No example available for this command."), show_alert=True)
+            return
+
+        example_text = Doc(
+            Title(Template(_("💡 Example: /{cmd}"), cmd=cmd_name)),
+            str(matched.example),
+        )
+
+        await self.event.answer()
+        if self.event.message and isinstance(self.event.message, Message):
+            await self.event.message.answer(str(example_text))
+
+
+@flags.help(exclude=True)
+class PMModuleExamplesHandler(CallbackQueryHandler):
+    """Shows all command examples for a module when the 💡 Show Examples button is tapped."""
+
+    @classmethod
+    def register(cls, router: Router):
+        router.callback_query.register(cls, PMHelpModuleExamples.filter())
+
+    async def handle(self) -> Any:
+        cb: PMHelpModuleExamples = self.data["callback_data"]
+        module = HELP_MODULES.get(cb.module_name)
+
+        if not module:
+            await self.event.answer(_("Module not found."), show_alert=True)
+            return
+
+        cmds_with_examples = [h for h in module.handlers if not h.only_op and h.example]
+
+        if not cmds_with_examples:
+            await self.event.answer(_("No examples available for this module."), show_alert=True)
+            return
+
+        doc = Doc(Title(Template(_("💡 Examples — {name}"), name=module.name)))
+        for handler in cmds_with_examples:
+            primary = handler.cmds[0]
+            doc += Section(
+                str(handler.example),
+                title=f"/{primary}",
+            )
+
+        # Button to go back to this module's help
+        buttons = InlineKeyboardBuilder()
+        buttons.row(
+            InlineKeyboardButton(
+                text=_("⬅️ Back to module"),
+                callback_data=PMHelpModule(module_name=cb.module_name, back_to_start=False).pack(),
+            )
+        )
+
+        await self.event.answer()
+        if self.event.message and isinstance(self.event.message, Message):
+            await self.event.message.answer(str(doc), reply_markup=buttons.as_markup())

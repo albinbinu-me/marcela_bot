@@ -5,7 +5,10 @@ from stfu_tg import Bold, Italic, Template
 from sophie_bot.db.models import ChatModel
 from sophie_bot.modules.welcomesecurity.callbacks import WelcomeSecurityMoveCB, WelcomeSecurityConfirmCB
 from sophie_bot.modules.welcomesecurity.utils_.emoji_captcha import EmojiCaptcha
-from sophie_bot.services.bot import bot
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.storage.base import StorageKey
+
+from sophie_bot.services.bot import bot, dp
 from sophie_bot.utils.i18n import gettext as _
 
 
@@ -56,6 +59,12 @@ async def initiate_captcha(
             callback_data=WelcomeSecurityConfirmCB(chat_iid=str(group.iid), is_join_request=is_join_request).pack(),
         )
     )
+
+    # Save captcha data to user's FSM state so it can be solved/shifted
+    await FSMContext(
+        storage=dp.storage,
+        key=StorageKey(bot_id=bot.id, chat_id=user.tid, user_id=user.tid)
+    ).update_data({"captcha": captcha.data.model_dump(), "ws_chat_iid": str(group.iid)})
 
     # DM mode: send to user's DM
     return await bot.send_photo(

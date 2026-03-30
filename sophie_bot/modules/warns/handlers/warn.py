@@ -28,7 +28,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 from ..callbacks import DeleteWarnCallback
 
 
-@flags.help(description=l_("Warns a user."))
+@flags.help(
+    description=l_("Warns a user."),
+    example=l_("/warn @user spamming — warn a user with a reason\n/warn (reply) — warn the replied user"),
+)
 @flags.disableable(name="warn")
 class WarnHandler(SophieMessageHandler):
     @staticmethod
@@ -145,7 +148,10 @@ class WarnHandler(SophieMessageHandler):
         await common_try(message.reply(text, reply_markup=reply_markup), reply_not_found=send_message)
 
 
-@flags.help(description=l_("Warns a user silently."))
+@flags.help(
+    description=l_("Warns a user silently."),
+    example=l_("/swarn @user — silently warn; no public message\n/swarn (reply) reason — quietly warn replied user"),
+)
 @flags.disableable(name="swarn")
 class SilentWarnHandler(WarnHandler):
     @staticmethod
@@ -205,7 +211,10 @@ class SilentWarnHandler(WarnHandler):
         )
 
 
-@flags.help(description=l_("Deletes the replied message and warns a user."))
+@flags.help(
+    description=l_("Deletes the replied message and warns a user."),
+    example=l_("/dwarn (reply) bad content — delete message and warn the sender"),
+)
 @flags.disableable(name="dwarn")
 class DeleteWarnHandler(WarnHandler):
     @staticmethod

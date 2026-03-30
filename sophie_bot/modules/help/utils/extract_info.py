@@ -36,6 +36,7 @@ class HandlerHelp:
     cmds: tuple[str, ...]
     args: Optional[ARGS_DICT]
     description: Optional[LazyProxy | str]
+    example: Optional[LazyProxy | str]
     only_admin: bool
     only_op: bool
     only_pm: bool
@@ -163,6 +164,7 @@ async def gather_cmds_help(router: Router) -> list[HandlerHelp]:
             cmds=cmds,
             args=args,
             description=help_flags.get("description", "") if help_flags else "",
+            example=help_flags.get("example", None) if help_flags else None,
             only_admin=only_admin,
             only_op=only_op,
             only_pm=only_pm,

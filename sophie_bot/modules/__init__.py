@@ -29,6 +29,7 @@ MODULES = [
     "promotes",
     "greetings",  # After feds
     "welcomesecurity",
+    "raidmode",
     "purges",
     "warns",
     "restrictions",

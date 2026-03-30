@@ -13,7 +13,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.disableable(name="filters")
-@flags.help(description=l_("Lists all filters in the chat"))
+@flags.help(
+    description=l_("Lists all filters in the chat"),
+    example=l_("/filters — shows all active keyword triggers in this group"),
+)
 class FiltersListHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

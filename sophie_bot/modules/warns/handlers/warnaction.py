@@ -107,7 +107,10 @@ class WarnActionRenderer:
         return doc.to_html(), builder.as_markup()
 
 
-@flags.help(description=l_("Configures warn actions."))
+@flags.help(
+    description=l_("Configures warn actions."),
+    example=l_("/warnaction ban — ban user when limit is reached\n/warnaction mute — mute instead of ban\n/warnaction kick"),
+)
 class WarnActionHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

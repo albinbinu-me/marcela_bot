@@ -10,7 +10,7 @@ from sophie_bot.modules.op.handlers.ListJobs import ListJobsHandler
 from sophie_bot.modules.op.handlers.StopJobs import StopJobsHandler
 from sophie_bot.modules.op.handlers.event import EventHandler
 from sophie_bot.modules.op.handlers.stats import StatsHandler, get_system_stats
-from sophie_bot.modules.op.handlers.allusers import AllUsersHandler
+from sophie_bot.modules.op.handlers.allusers import AllUsersHandler, AllUsersListHandler
 from sophie_bot.utils.i18n import LazyProxy
 from sophie_bot.utils.i18n import lazy_gettext as l_
 from .api import health_router
@@ -44,5 +44,6 @@ __handlers__ = (
     EventHandler,
     StatsHandler,
     AllUsersHandler,
+    AllUsersListHandler,
 )
 __stats__ = get_system_stats

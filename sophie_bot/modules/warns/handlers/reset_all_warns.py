@@ -14,7 +14,10 @@ from sophie_bot.modules.troubleshooters.callbacks import CallbackActionCancel
 from ..callbacks import ResetAllWarnsCallback
 
 
-@flags.help(description=l_("Resets all warnings of all users in the current chat."))
+@flags.help(
+    description=l_("Resets all warnings of all users in the current chat."),
+    example=l_("/resetallwarns — wipe the warn slate clean for everyone in this group"),
+)
 class ResetAllWarnsHandler(SophieMessageHandler):
     @staticmethod
     def filters():

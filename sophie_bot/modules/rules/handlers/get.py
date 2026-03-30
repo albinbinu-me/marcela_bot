@@ -13,7 +13,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Gets chat rules"))
+@flags.help(
+    description=l_("Gets chat rules"),
+    example=l_("/rules — shows the current group rules to everyone"),
+)
 @flags.disableable(name="rules")
 class GetRulesHandler(SophieMessageHandler):
     @staticmethod

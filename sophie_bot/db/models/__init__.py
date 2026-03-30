@@ -34,6 +34,7 @@ from sophie_bot.db.models.rules import RulesModel
 from sophie_bot.db.models.settings_keyvalue import GlobalSettings
 from sophie_bot.db.models.warns import WarnModel, WarnSettingsModel
 from sophie_bot.db.models.ws_user import WSUserModel
+from sophie_bot.db.models.raidmode import RaidModeModel
 
 models: List[Type[Document]] = [
     ChatModel,
@@ -72,4 +73,5 @@ models: List[Type[Document]] = [
     FederationImportTask,
     FederationExportTask,
     RefreshTokenModel,
+    RaidModeModel,
 ]

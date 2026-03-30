@@ -105,7 +105,7 @@ extract_lang:
 
 update_lang:
 	$(PYBABEL) update -d "$(LOCALES_DIR)" -D "sophie" -i "$(LOCALES_DIR)/sophie.pot" \
-	--ignore-pot-creation-date --omit-header --no-wrap
+	--omit-header --no-wrap
 
 compile_lang:
 	$(PYBABEL) compile -d "$(LOCALES_DIR)" -D "sophie" --use-fuzzy --statistics

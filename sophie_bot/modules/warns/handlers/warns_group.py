@@ -13,7 +13,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 from .warns import optional_user
 
 
-@flags.help(description=l_("Shows user's warns in the current chat."))
+@flags.help(
+    description=l_("Shows user's warns in the current chat."),
+    example=l_("/warns @user — see how many warns a user has and the reasons"),
+)
 @flags.disableable(name="warns")
 class WarnsGroupHandler(SophieMessageHandler):
     @staticmethod

@@ -17,7 +17,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Purges all messages after replied message (including the replied message)"))
+@flags.help(
+    description=l_("Purges all messages after replied message (including the replied message)"),
+    example=l_("/purge (reply to a message) — deletes from that message to the latest"),
+)
 class PurgeMessagesHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

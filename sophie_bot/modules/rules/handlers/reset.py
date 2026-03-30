@@ -12,7 +12,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Resets chat rules to default settings."))
+@flags.help(
+    description=l_("Resets chat rules to default settings."),
+    example=l_("/resetrules — removes all custom rules from this group"),
+)
 class ResetRulesHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

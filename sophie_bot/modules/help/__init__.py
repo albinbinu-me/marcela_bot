@@ -12,7 +12,7 @@ from ...utils.logger import log
 from .callbacks import PMHelpModule
 from .handlers.help_group import HelpGroupHandler
 from .handlers.op import OpCMDSList
-from .handlers.pm_modules import PMModuleHelp, PMModulesList, PMHelpQuery
+from .handlers.pm_modules import PMModuleHelp, PMModulesList, PMHelpQuery, PMCommandExampleHandler, PMModuleExamplesHandler
 from .handlers.set_lang_legacy import set_lang_cb
 from .handlers.start_group import StartGroupHandler
 from .handlers.start_pm import StartPMHandler
@@ -39,10 +39,10 @@ __handlers__ = (StartPMHandler, HelpGroupHandler, PMModulesList, PMHelpQuery, St
 
 async def __pre_setup__():
     router.callback_query.register(PMModuleHelp, PMHelpModule.filter())
-
     router.message.register(OpCMDSList, CMDFilter("op_cmds"), IsOP(True))
-
     router.callback_query.register(set_lang_cb, F.data == "lang_btn")
+    PMCommandExampleHandler.register(router)
+    PMModuleExamplesHandler.register(router)
 
 
 async def __post_setup__(modules: dict[str, ModuleType]):

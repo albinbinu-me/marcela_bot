@@ -13,7 +13,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Lists all the chats admins."))
+@flags.help(
+    description=l_("Lists all the chats admins."),
+    example=l_("/admins — view all admins and their titles in this group"),
+)
 @flags.disableable(name="adminlist")
 class AdminListHandler(SophieMessageHandler):
     @staticmethod

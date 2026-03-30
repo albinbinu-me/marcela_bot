@@ -22,7 +22,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.args(lock_type=OptionalArg(LockTypeArg(l_("Lock type"))))
-@flags.help(description=l_("Unlock a message type in the chat"))
+@flags.help(
+    description=l_("Unlock a message type in the chat"),
+    example=l_("/unlock links — allow links again\n/unlock all — remove all locks"),
+)
 @flags.disableable(name="unlock")
 class UnlockHandler(SophieMessageHandler):
     @staticmethod

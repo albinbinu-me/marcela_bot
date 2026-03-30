@@ -22,7 +22,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.args(lock_type=OptionalArg(LockTypeArg(l_("Lock type"))))
-@flags.help(description=l_("Lock a message type in the chat"))
+@flags.help(
+    description=l_("Lock a message type in the chat"),
+    example=l_("/lock links — prevent members from posting links\n/lock stickers\n/lock photos"),
+)
 @flags.disableable(name="lock")
 class LockHandler(SophieMessageHandler):
     @staticmethod

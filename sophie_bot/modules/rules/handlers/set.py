@@ -15,7 +15,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Sets chat rules"))
+@flags.help(
+    description=l_("Sets chat rules"),
+    example=l_("/setrules No spam, no links, be respectful. — sets those as the group rules"),
+)
 @flags.args(
     content=OptionalArg(TextArg(l_("Content"), parse_entities=True)),
 )

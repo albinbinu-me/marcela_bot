@@ -18,3 +18,11 @@ class PMHelpStartUrlCallback(CmdStart, prefix="help"):
 
 class PMHelpQueryStartUrlCallback(CmdStart, prefix="helpq"):
     query: str
+
+
+class PMHelpCommandExample(CallbackData, prefix="pmhelpexample"):
+    cmd: str  # primary command name, used to look up the handler
+
+
+class PMHelpModuleExamples(CallbackData, prefix="pmhelpmodex"):
+    module_name: str  # show all examples for all commands in this module
