@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import Any, Optional
 
 from aiogram import flags
 from aiogram.dispatcher.event.handler import CallbackType
-from aiogram.types import Message, InlineKeyboardButton, User
+from aiogram.types import InlineKeyboardButton, Message, User
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from ass_tg.types import TextArg, OptionalArg
+from ass_tg.types import OptionalArg, TextArg
 from ass_tg.types.base_abc import ArgFabric
-from stfu_tg import Doc, Title, Section, KeyValue, UserLink, Italic, Template
+from stfu_tg import Doc, Italic, KeyValue, Section, Template, Title, UserLink
 
 from sophie_bot.args.users import SophieUserArg
 from sophie_bot.config import CONFIG
@@ -17,15 +18,38 @@ from sophie_bot.filters.admin_rights import BotHasPermissions, UserRestricting
 from sophie_bot.filters.cmd import CMDFilter
 from sophie_bot.modules.logging.events import LogEvent
 from sophie_bot.modules.logging.utils import log_event
-from sophie_bot.modules.utils_.common_try import common_try
 from sophie_bot.modules.utils_.admin import is_user_admin
-from sophie_bot.modules.utils_.get_user import get_arg_or_reply_user
+from sophie_bot.modules.utils_.common_try import common_try
+from sophie_bot.modules.utils_.get_user import get_arg_or_reply_user, get_union_user
 from sophie_bot.modules.utils_.message import is_real_reply
+from sophie_bot.modules.warns.callbacks import DeleteWarnCallback
 from sophie_bot.modules.warns.utils import warn_user
 from sophie_bot.utils.handlers import SophieMessageHandler
+from sophie_bot.utils.exception import SophieException
 from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
-from ..callbacks import DeleteWarnCallback
+
+
+def _build_warn_doc(
+    target_user: ChatModel,
+    admin_id: int,
+    admin_name: str,
+    current: int,
+    limit: int,
+    reason: Optional[str],
+    punishment: Optional[str],
+) -> Doc:
+    doc = Doc(
+        Title(_("⚠️ User warned")),
+        KeyValue(_("User"), UserLink(target_user.tid, target_user.first_name_or_title)),
+        KeyValue(_("By admin"), UserLink(admin_id, admin_name)),
+        KeyValue(_("Warnings count"), f"{current}/{limit}"),
+    )
+    if reason:
+        doc += Section(Italic(reason), title=_("Reason"))
+    if punishment:
+        doc += Section(Template(_("User has been {punishment} due to reaching max warns."), punishment=punishment))
+    return doc
 
 
 @flags.help(
@@ -45,12 +69,9 @@ class WarnHandler(SophieMessageHandler):
     @classmethod
     async def handler_args(cls, message: Message | None, data: dict) -> dict[str, ArgFabric]:
         args: dict[str, ArgFabric] = {}
-
         if not message or not is_real_reply(message):
             args["user"] = SophieUserArg(l_("User to warn"))
-
         args["reason"] = OptionalArg(TextArg(l_("Reason")))
-
         return args
 
     async def handle(self) -> Any:
@@ -59,10 +80,8 @@ class WarnHandler(SophieMessageHandler):
         admin_user: ChatModel = self.data["user_db"]
         reason: Optional[str] = self.data.get("reason")
 
-        # Get user from args or reply
         raw_user = get_arg_or_reply_user(message, self.data)
 
-        # Get ChatModel from database (savechats middleware handles upserting)
         if isinstance(raw_user, User):
             target_user = await ChatModel.get_by_tid(raw_user.id)
             if not target_user:
@@ -98,24 +117,9 @@ class WarnHandler(SophieMessageHandler):
             {"target_user_id": target_user.tid, "reason": reason, "current": current, "limit": limit},
         )
 
-        # Construct response
-        doc = Doc(
-            Title(_("⚠️ User warned")),
-            KeyValue(_("User"), UserLink(target_user.tid, target_user.first_name_or_title)),
-            KeyValue(_("By admin"), UserLink(message.from_user.id, message.from_user.first_name)),
-            KeyValue(_("Warnings count"), f"{current}/{limit}"),
-        )
+        doc = _build_warn_doc(target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment)
 
-        if reason:
-            doc += Section(Italic(reason), title=_("Reason"))
-
-        if punishment:
-            doc += Section(Template(_("User has been {punishment} due to reaching max warns."), punishment=punishment))
-
-        # Buttons
         builder = InlineKeyboardBuilder()
-
-        # Rules button
         if await RulesModel.get_rules(connection.db_model.iid):
             bot_username = (await self.bot.get_me()).username
             builder.row(
@@ -124,8 +128,6 @@ class WarnHandler(SophieMessageHandler):
                     url=f"https://t.me/{bot_username}?start=btn_rules_{connection.tid}",
                 )
             )
-
-        # Delete warn button
         if not punishment and warn and warn.id:
             builder.row(
                 InlineKeyboardButton(
@@ -149,8 +151,12 @@ class WarnHandler(SophieMessageHandler):
 
 
 @flags.help(
-    description=l_("Warns a user silently."),
-    example=l_("/swarn @user — silently warn; no public message\n/swarn (reply) reason — quietly warn replied user"),
+    description=l_("Warns a user silently (no public message). Optionally provide a reason."),
+    example=l_(
+        "/swarn @user spamming — silently warn with reason\n"
+        "/swarn (reply) posting links — silently warn the replied user\n"
+        "/swarn @user — silently warn with no reason"
+    ),
 )
 @flags.disableable(name="swarn")
 class SilentWarnHandler(WarnHandler):
@@ -168,8 +174,7 @@ class SilentWarnHandler(WarnHandler):
         admin_user: ChatModel = self.data["user_db"]
         reason: Optional[str] = self.data.get("reason")
 
-        from contextlib import suppress
-
+        # Delete the command message silently
         with suppress(Exception):
             await message.delete()
 
@@ -178,17 +183,14 @@ class SilentWarnHandler(WarnHandler):
         if isinstance(raw_user, User):
             target_user = await ChatModel.get_by_tid(raw_user.id)
             if not target_user:
-                await message.reply(_("User not found in database."))
                 return
         else:
             target_user = raw_user
 
         if target_user.tid == CONFIG.bot_id:
-            await message.reply(_("I cannot warn myself."))
             return
 
         if await is_user_admin(connection.db_model.iid, target_user.iid):
-            await message.reply(_("I cannot warn an admin."))
             return
 
         if not message.from_user:
@@ -210,10 +212,19 @@ class SilentWarnHandler(WarnHandler):
             {"target_user_id": target_user.tid, "reason": reason, "current": current, "limit": limit},
         )
 
+        # DM the acting admin so they get confirmation + reason summary
+        doc = _build_warn_doc(target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment)
+        doc_text = _("🔇 <b>Silent warn applied</b>\n") + doc.to_html()
+        with suppress(Exception):
+            await self.bot.send_message(chat_id=message.from_user.id, text=doc_text, parse_mode="HTML")
+
 
 @flags.help(
-    description=l_("Deletes the replied message and warns a user."),
-    example=l_("/dwarn (reply) bad content — delete message and warn the sender"),
+    description=l_("Deletes the replied message and warns the sender. Optionally provide a reason."),
+    example=l_(
+        "/dwarn (reply) — delete message and warn the sender\n"
+        "/dwarn (reply) bad content — delete message, warn, and record reason"
+    ),
 )
 @flags.disableable(name="dwarn")
 class DeleteWarnHandler(WarnHandler):
@@ -232,7 +243,7 @@ class DeleteWarnHandler(WarnHandler):
         reason: Optional[str] = self.data.get("reason")
 
         if not message.reply_to_message:
-            return await message.reply(_("Reply a message to send perfome warn"))
+            return await message.reply(_("Reply to a message to perform warn."))
 
         raw_user = get_arg_or_reply_user(message, self.data)
 
@@ -255,7 +266,9 @@ class DeleteWarnHandler(WarnHandler):
         if not message.from_user:
             return
 
-        await message.reply_to_message.delete()
+        # Delete the offending message first
+        with suppress(Exception):
+            await message.reply_to_message.delete()
 
         current, limit, punishment, warn = await warn_user(
             connection.db_model,
@@ -273,54 +286,35 @@ class DeleteWarnHandler(WarnHandler):
             {"target_user_id": target_user.tid, "reason": reason, "current": current, "limit": limit},
         )
 
-        explicit_reason = self.data.get("reason")
+        # Always send the full warn doc (consistent with /warn)
+        doc = _build_warn_doc(target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment)
 
-        if explicit_reason:
-            doc = Doc(
-                Title(_("⚠️ User warned")),
-                KeyValue(_("User"), UserLink(target_user.tid, target_user.first_name_or_title)),
-                KeyValue(_("By admin"), UserLink(message.from_user.id, message.from_user.first_name)),
-                KeyValue(_("Warnings count"), f"{current}/{limit}"),
+        builder = InlineKeyboardBuilder()
+        if await RulesModel.get_rules(connection.db_model.iid):
+            bot_username = (await self.bot.get_me()).username
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"🪧 {_('Rules')}",
+                    url=f"https://t.me/{bot_username}?start=btn_rules_{connection.tid}",
+                )
+            )
+        if not punishment and warn and warn.id:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"🗑️ {_('Delete warn')}",
+                    callback_data=DeleteWarnCallback(warn_iid=str(warn.id)).pack(),
+                )
             )
 
-            if reason:
-                doc += Section(Italic(reason), title=_("Reason"))
+        reply_markup = builder.as_markup()
+        text = doc.to_html()
 
-            if punishment:
-                doc += Section(
-                    Template(_("User has been {punishment} due to reaching max warns."), punishment=punishment)
-                )
+        async def send_message() -> Message:
+            return await self.bot.send_message(
+                chat_id=message.chat.id,
+                text=text,
+                reply_markup=reply_markup,
+                message_thread_id=message.message_thread_id,
+            )
 
-            builder = InlineKeyboardBuilder()
-
-            if await RulesModel.get_rules(connection.db_model.iid):
-                bot_username = (await self.bot.get_me()).username
-                builder.row(
-                    InlineKeyboardButton(
-                        text=f"🪧 {_('Rules')}",
-                        url=f"https://t.me/{bot_username}?start=btn_rules_{connection.tid}",
-                    )
-                )
-
-            if not punishment and warn and warn.id:
-                builder.row(
-                    InlineKeyboardButton(
-                        text=f"🗑️ {_('Delete warn')}",
-                        callback_data=DeleteWarnCallback(warn_iid=str(warn.id)).pack(),
-                    )
-                )
-
-            reply_markup = builder.as_markup()
-            text = doc.to_html()
-
-            async def send_message() -> Message:
-                return await self.bot.send_message(
-                    chat_id=message.chat.id,
-                    text=text,
-                    reply_markup=reply_markup,
-                    message_thread_id=message.message_thread_id,
-                )
-
-            await common_try(message.reply(text, reply_markup=reply_markup), reply_not_found=send_message)
-        else:
-            await message.reply(_("users message is deleted by admin"))
+        await common_try(message.reply(text, reply_markup=reply_markup), reply_not_found=send_message)
