@@ -13,11 +13,11 @@ class RaidModeModel(Document):
     chat: Link[ChatModel]
 
     enabled: bool = False
-    # Threshold: how many joins within window_seconds trigger raid mode
-    threshold: int = 10
+    # Threshold: how many joins within window_seconds trigger auto raid mode
+    threshold: int = 15
     window_seconds: int = 60
-    # When raid mode auto-activates, mute new joiners for this many minutes (0 = until manual disabled)
-    auto_mute_minutes: int = 0
+    # When raid mode auto-activates, mute new joiners for this many minutes (0 = indefinite)
+    auto_mute_minutes: int = 60
 
     class Settings:
         name = "raidmode"

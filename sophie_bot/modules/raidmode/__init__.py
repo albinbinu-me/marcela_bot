@@ -5,6 +5,7 @@ from sophie_bot.utils.i18n import LazyProxy
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 from .handlers.raidmode import RaidModeHandler, RaidModeToggleCallbackHandler, RaidMuteDurationHandler
+from .handlers.raidunmute import RaidUnmuteHandler
 from .middlewares.raid_detector import RaidDetectorMiddleware
 
 router = Router(name="raidmode")
@@ -16,8 +17,11 @@ __module_info__ = LazyProxy(
     lambda: Doc(
         l_(
             "Raid Mode monitors new member joins. When a flood of joins is detected within a short window, "
-            "new joiners are automatically muted and admins are alerted. "
-            "You can also manually enable Raid Mode with /raidmode on to block all new joiners until you disable it."
+            "new joiners are automatically muted and admins are alerted.\n\n"
+            "Commands:\n"
+            "• /raidmode on|off — manually enable or disable Raid Mode\n"
+            "• /raidmute <minutes> — set how long new joiners are muted (0 = indefinite)\n"
+            "• /raidunmute — lift all mutes placed during the last raid at once"
         )
     )
 )
@@ -26,6 +30,7 @@ __handlers__ = (
     RaidModeHandler,
     RaidMuteDurationHandler,
     RaidModeToggleCallbackHandler,
+    RaidUnmuteHandler,
 )
 
 

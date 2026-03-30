@@ -4304,17 +4304,23 @@ msgstr "Eliminar el mensaje"
 msgid "Deletes the message"
 msgstr "Elimina el mensaje"
 
-#: sophie_bot/modules/raidmode/__init__.py:12
+#: sophie_bot/modules/raidmode/__init__.py:13
 #: sophie_bot/modules/raidmode/handlers/raidmode.py:28
 msgid "Raid Mode"
 msgstr ""
 
-#: sophie_bot/modules/raidmode/__init__.py:14
+#: sophie_bot/modules/raidmode/__init__.py:15
 msgid "Automatically detect and stop member join floods (raids)."
 msgstr ""
 
-#: sophie_bot/modules/raidmode/__init__.py:17
-msgid "Raid Mode monitors new member joins. When a flood of joins is detected within a short window, new joiners are automatically muted and admins are alerted. You can also manually enable Raid Mode with /raidmode on to block all new joiners until you disable it."
+#: sophie_bot/modules/raidmode/__init__.py:18
+msgid ""
+"Raid Mode monitors new member joins. When a flood of joins is detected within a short window, new joiners are automatically muted and admins are alerted.\n"
+"\n"
+"Commands:\n"
+"• /raidmode on|off — manually enable or disable Raid Mode\n"
+"• /raidmute <minutes> — set how long new joiners are muted (0 = indefinite)\n"
+"• /raidunmute — lift all mutes placed during the last raid at once"
 msgstr ""
 
 #: sophie_bot/modules/raidmode/handlers/raidmode.py:24
@@ -4346,14 +4352,14 @@ msgstr "Silenciar por 30 minutos (por defecto)"
 
 #: sophie_bot/modules/raidmode/handlers/raidmode.py:64
 #: sophie_bot/modules/raidmode/handlers/raidmode.py:81
-#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:35
+#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:38
 #, fuzzy
 msgid "indefinitely"
 msgstr "Bane a un usuario indefinidamente"
 
 #: sophie_bot/modules/raidmode/handlers/raidmode.py:64
 #: sophie_bot/modules/raidmode/handlers/raidmode.py:81
-#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:37
+#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:40
 msgid "{n} minutes"
 msgstr ""
 
@@ -4393,7 +4399,7 @@ msgid "Raid Mode {label} for {chat}"
 msgstr ""
 
 #: sophie_bot/modules/raidmode/handlers/raidmode.py:122
-#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:59
+#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:62
 msgid "🔓 Disable Raid Mode"
 msgstr ""
 
@@ -4401,15 +4407,37 @@ msgstr ""
 msgid "🔒 Enable Raid Mode"
 msgstr ""
 
-#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:41
+#: sophie_bot/modules/raidmode/handlers/raidunmute.py:21
+msgid "Unmutes all users who were muted by the Raid Mode detector in this chat."
+msgstr ""
+
+#: sophie_bot/modules/raidmode/handlers/raidunmute.py:22
+msgid "/raidunmute — lift all raid mutes and let previously joined members speak"
+msgstr ""
+
+#: sophie_bot/modules/raidmode/handlers/raidunmute.py:41
+msgid "ℹ️ No raid-muted users found for this chat."
+msgstr ""
+
+#: sophie_bot/modules/raidmode/handlers/raidunmute.py:56
+msgid ""
+"✅ Unmuted {success} user(s).\n"
+"⚠️ Failed for {failed} user(s) (they may have already left)."
+msgstr ""
+
+#: sophie_bot/modules/raidmode/handlers/raidunmute.py:62
+msgid "✅ Successfully unmuted all {count} raid-muted user(s)."
+msgstr ""
+
+#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:44
 msgid "{h}h {m}m"
 msgstr ""
 
-#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:42
+#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:45
 msgid "{h} hours"
 msgstr ""
 
-#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:55
+#: sophie_bot/modules/raidmode/middlewares/raid_detector.py:58
 msgid "🔒 Keep Raid Mode ON"
 msgstr ""
 
@@ -5840,17 +5868,17 @@ msgstr "Usa {cmd} para controlar la restricción de medios."
 msgid "Welcome Security message"
 msgstr "Mensaje de Seguridad de Bienvenida"
 
-#: sophie_bot/modules/welcomesecurity/utils_/captcha_done.py:31
+#: sophie_bot/modules/welcomesecurity/utils_/captcha_done.py:33
 #: sophie_bot/modules/welcomesecurity/utils_/complete_captcha.py:40
 msgid "You're all set, and can now participate in the conversation"
 msgstr "Estás listo y ahora puedes participar en la conversación."
 
-#: sophie_bot/modules/welcomesecurity/utils_/captcha_done.py:36
+#: sophie_bot/modules/welcomesecurity/utils_/captcha_done.py:38
 #, python-brace-format
 msgid "Due to group's security policy, you were restricted to send media for the next {time}"
 msgstr "Debido a la política de seguridad del grupo, se te restringió el envío de medios por los próximos {time}."
 
-#: sophie_bot/modules/welcomesecurity/utils_/captcha_done.py:43
+#: sophie_bot/modules/welcomesecurity/utils_/captcha_done.py:45
 msgid "Back to the group"
 msgstr "Back to the group"
 
@@ -6826,5 +6854,8 @@ msgstr "No se pudo encontrar la mención de usuario"
 #~ msgstr ""
 
 #~ msgid "You retain full ownership of your data. You may request a complete export of all data associated with your User ID, or permanently delete your footprint from our database at any time using this menu."
+#~ msgstr ""
+
+#~ msgid "Raid Mode monitors new member joins. When a flood of joins is detected within a short window, new joiners are automatically muted and admins are alerted. You can also manually enable Raid Mode with /raidmode on to block all new joiners until you disable it."
 #~ msgstr ""
 

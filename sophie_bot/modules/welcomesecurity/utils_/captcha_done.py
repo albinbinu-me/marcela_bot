@@ -4,6 +4,7 @@ from babel.dates import format_timedelta
 from stfu_tg import Doc, Template
 
 from sophie_bot.db.models import ChatModel, GreetingsModel, RulesModel
+from sophie_bot.db.models.greetings import WelcomeMute
 from sophie_bot.modules.greetings.default_welcome import get_default_welcome_message
 from sophie_bot.modules.greetings.utils.send_welcome import send_welcome
 from sophie_bot.modules.welcomesecurity.utils_.db_time_convert import (
@@ -23,15 +24,16 @@ async def captcha_done(query: CallbackQuery, user: ChatModel, group: ChatModel, 
     captcha = EmojiCaptcha()
     captcha.show_emoji("✅")
 
-    if not model.welcome_mute or not model.welcome_mute.time:
-        raise ValueError("No welcome_mute")
+    # Use the model's welcome_mute if it exists, otherwise pass a default (disabled) WelcomeMute.
+    # This prevents a crash when welcome_mute is not configured — captcha still unmutes the user.
+    welcome_mute = model.welcome_mute or WelcomeMute()
 
-    await ws_on_user_passed(user, group, model.welcome_mute)
+    await ws_on_user_passed(user, group, welcome_mute)
 
     doc = Doc(_("You're all set, and can now participate in the conversation"))
 
-    if model.welcome_mute.enabled:
-        delta = convert_timedelta_or_str(model.welcome_mute.time)
+    if welcome_mute.enabled and welcome_mute.time:
+        delta = convert_timedelta_or_str(welcome_mute.time)
         doc += Template(
             _("Due to group's security policy, you were restricted to send media for the next {time}"),
             time=format_timedelta(delta, locale=locale),
@@ -44,7 +46,7 @@ async def captcha_done(query: CallbackQuery, user: ChatModel, group: ChatModel, 
 
     await send_captcha_message(query.message, captcha, str(doc), reply_markup=buttons.as_markup())
 
-    # Send welcome message is enabled
+    # Send welcome message if enabled
     if not model.welcome_disabled:
         chat_rules = await RulesModel.get_rules(group.iid)
         saveable = model.note or get_default_welcome_message(bool(chat_rules))

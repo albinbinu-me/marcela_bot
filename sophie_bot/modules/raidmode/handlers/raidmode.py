@@ -40,6 +40,50 @@ class RaidModeHandler(StatusBoolHandlerABC):
         model = await RaidModeModel.get_by_chat_iid(self.connection.db_model.iid)
         await model.set_enabled(new_status)
 
+    async def display_current_status(self):
+        """Show current raid mode state with an inline toggle button for quick action."""
+        model = await RaidModeModel.get_by_chat_iid(self.connection.db_model.iid)
+
+        state_label = _("🔴 Enabled") if model.enabled else _("🟢 Disabled (auto-detect active)")
+        duration_label = (
+            _("indefinitely") if model.auto_mute_minutes <= 0
+            else _("{n} minutes").format(n=model.auto_mute_minutes)
+        )
+
+        text = (
+            "<b>🚨 Raid Mode — {chat}</b>\n\n"
+            "  Status:    <b>{state}</b>\n"
+            "  Trigger:   <b>{threshold} joins within {window}s</b>\n"
+            "  Mute for:  <b>{duration}</b>\n\n"
+            "Use /raidmute &lt;minutes&gt; to change the mute duration.\n"
+            "Use /raidunmute to lift all active raid mutes."
+        ).format(
+            chat=self.connection.title,
+            state=state_label,
+            threshold=model.threshold,
+            window=model.window_seconds,
+            duration=duration_label,
+        )
+
+        # Build quick-action button
+        buttons = InlineKeyboardBuilder()
+        if model.enabled:
+            buttons.row(
+                InlineKeyboardButton(
+                    text=_("🔓 Disable Raid Mode"),
+                    callback_data=RaidModeToggleCB(chat_iid=str(model.chat.ref.id), enabled=False).pack(),
+                )
+            )
+        else:
+            buttons.row(
+                InlineKeyboardButton(
+                    text=_("🔒 Enable Raid Mode"),
+                    callback_data=RaidModeToggleCB(chat_iid=str(model.chat.ref.id), enabled=True).pack(),
+                )
+            )
+
+        await self.event.reply(text, reply_markup=buttons.as_markup(), parse_mode="HTML")
+
 
 @flags.help(
     description=l_("Sets how long (in minutes) new members are muted during a raid. Use 0 for indefinite."),

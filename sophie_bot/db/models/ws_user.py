@@ -20,14 +20,33 @@ class WSUserModel(Document):
 
     @staticmethod
     async def ensure_user(user: "ChatModel", group: "ChatModel", is_join_request: bool) -> "WSUserModel":
-        return await WSUserModel.find_one(
+        """
+        Get or create the WS pending record for this user+group pair.
+        If a record already exists with passed=True we do NOT overwrite it —
+        the user has already completed captcha for this chat.
+        """
+        existing = await WSUserModel.find_one(
             WSUserModel.user.id == user.iid,
             WSUserModel.group.id == group.iid,
-        ).upsert(
-            Set({}),
-            on_insert=WSUserModel(user=user, group=group, is_join_request=is_join_request),
-            response_type=UpdateResponse.NEW_DOCUMENT,
         )
+        if existing:
+            return existing
+        new_record = WSUserModel(user=user, group=group, is_join_request=is_join_request)
+        await new_record.insert()
+        return new_record
+
+    @staticmethod
+    async def mark_passed(user_iid: PydanticObjectId, group_iid: PydanticObjectId) -> Optional["WSUserModel"]:
+        """
+        Mark the user as having passed captcha WITHOUT deleting the record immediately.
+        This prevents a race condition where the scheduler or middleware re-processes
+        the user before the record is cleaned up.
+        """
+        record = await WSUserModel.find_one(WSUserModel.user.id == user_iid, WSUserModel.group.id == group_iid)
+        if record:
+            record.passed = True
+            await record.save()
+        return record
 
     @staticmethod
     async def remove_user(user_iid: PydanticObjectId, group_iid: PydanticObjectId) -> Optional["WSUserModel"]:

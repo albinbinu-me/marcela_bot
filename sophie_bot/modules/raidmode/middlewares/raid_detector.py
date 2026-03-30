@@ -21,7 +21,10 @@ from sophie_bot.utils.logger import log
 # Redis keys
 _JOINS_KEY = "raidmode:joins:{chat_iid}"
 _RAID_ACTIVE_KEY = "raidmode:active:{chat_iid}"
+_RAID_MUTED_KEY = "raidmode:muted:{chat_iid}"  # SET of user_tids muted during raid
 _JOINS_TTL_SECONDS = 600
+# Raid-muted user entries expire after 24 h so stale data is cleaned up automatically
+_RAID_MUTED_TTL_SECONDS = 86400
 
 
 def _mute_duration(model: RaidModeModel) -> timedelta | None:
@@ -66,7 +69,7 @@ async def _notify_raid(chat_tid: int, chat: ChatModel, model: RaidModeModel, joi
         "🚨 <b>Raid Detected!</b>\n\n"
         "{joins} new members joined in <b>{window}s</b>.\n"
         "New joiners are now muted for <b>{duration}</b>.\n\n"
-        "Admins have been notified."
+        "Admins have been notified. Use <code>/raidunmute</code> to lift all raid mutes."
     ).format(
         joins=joins_count,
         window=model.window_seconds,
@@ -74,17 +77,19 @@ async def _notify_raid(chat_tid: int, chat: ChatModel, model: RaidModeModel, joi
     )
 
     try:
-        await bot.send_message(chat_id=chat_tid, text=group_text, reply_markup=toggle_buttons.as_markup())
+        await bot.send_message(chat_id=chat_tid, text=group_text, reply_markup=toggle_buttons.as_markup(), parse_mode="HTML")
     except Exception as err:  # noqa: BLE001
         log.warning("RaidMode: failed to send group alert", err=err, chat=chat_tid)
 
     # --- 2. DM every admin ---
     admin_text = (
         "⚠️ <b>Raid Alert — {chat_name}</b>\n\n"
-        "{joins} users joined in <b>{window}s</b>.\n"
-        "Raid Mode has been auto-triggered.\n"
-        "New joiners are muted for <b>{duration}</b>.\n\n"
-        "Use the buttons below to control Raid Mode."
+        "🔢 <b>{joins}</b> users joined in <b>{window}s</b>\n"
+        "⏱ Mute duration: <b>{duration}</b>\n"
+        "🚨 Raid Mode has been auto-triggered.\n\n"
+        "• Use <b>Keep ON</b> to keep raid mode active.\n"
+        "• Use <b>Disable</b> to stop muting new joiners.\n"
+        "• Use <code>/raidunmute</code> in the group to lift all raid mutes at once."
     ).format(
         chat_name=chat.first_name_or_title,
         joins=joins_count,
@@ -106,6 +111,7 @@ async def _notify_raid(chat_tid: int, chat: ChatModel, model: RaidModeModel, joi
                 chat_id=admin.user.id,
                 text=admin_text,
                 reply_markup=toggle_buttons.as_markup(),
+                parse_mode="HTML",
             )
         except TelegramForbiddenError:
             # Admin hasn't started the bot in PM — skip silently
@@ -114,15 +120,37 @@ async def _notify_raid(chat_tid: int, chat: ChatModel, model: RaidModeModel, joi
             log.warning("RaidMode: failed to DM admin", err=err, admin=admin.user.id)
 
 
+async def record_raid_mute(chat_iid: str, user_tid: int) -> None:
+    """Store the user's Telegram ID in the raid-muted Redis set for this chat."""
+    key = _RAID_MUTED_KEY.format(chat_iid=chat_iid)
+    await aredis.sadd(key, str(user_tid))
+    await aredis.expire(key, _RAID_MUTED_TTL_SECONDS)
+
+
+async def get_raid_muted_users(chat_iid: str) -> list[int]:
+    """Return all Telegram user IDs that were muted by the raid detector for this chat."""
+    key = _RAID_MUTED_KEY.format(chat_iid=chat_iid)
+    raw = await aredis.smembers(key)
+    return [int(uid) for uid in raw]
+
+
+async def clear_raid_muted_users(chat_iid: str) -> None:
+    """Remove the raid-muted set for this chat."""
+    key = _RAID_MUTED_KEY.format(chat_iid=chat_iid)
+    await aredis.delete(key)
+
+
 class RaidDetectorMiddleware(BaseMiddleware):
     """
     Watches chat_member join events.
     When threshold is breached within the rolling window:
       - auto-mutes each new joiner (for auto_mute_minutes, or indefinitely if 0)
+      - records each muted user in Redis (so /raidunmute can lift them all)
       - sends a group announcement
       - DMs all admins with a toggle button
     When raid_mode is already manually enabled:
       - mutes every new joiner silently with the configured duration
+      - records each muted user in Redis
     """
 
     async def __call__(
@@ -142,22 +170,34 @@ class RaidDetectorMiddleware(BaseMiddleware):
         if user.is_bot:
             return await handler(event, data)
 
+        # CRITICAL: Only treat this as a join if the user was NOT already in the group.
+        # When unmute_user() / restrict_chat_member() is called, Telegram fires a
+        # ChatMemberUpdated with new_status="member". Without this check the bot would
+        # re-mute the user immediately after unmuting them.
+        # Real joins: old_status is "left" (voluntary) or "kicked" (was banned then unbanned).
+        # Permission changes: old_status is "restricted" or "member" — skip those.
+        old_status = event.old_chat_member.status
+        if old_status not in ("left", "kicked"):
+            return await handler(event, data)
+
         chat_tid = event.chat.id
         chat = await ChatModel.get_by_tid(chat_tid)
         if not chat:
             return await handler(event, data)
 
         model = await RaidModeModel.get_by_chat_iid(chat.iid)
+        chat_iid_str = str(chat.iid)
 
         if model.enabled:
-            # Manual raid mode — mute with configured duration
+            # Manual raid mode — mute with configured duration and record
             await mute_user(chat_tid=chat_tid, user_tid=user.id, until_date=_mute_duration(model))
+            await record_raid_mute(chat_iid_str, user.id)
             log.debug("RaidMode active: muted new joiner", chat=chat_tid, user=user.id)
             return await handler(event, data)
 
         # --- Auto-detection: sliding window ---
-        join_key = _JOINS_KEY.format(chat_iid=str(chat.iid))
-        active_key = _RAID_ACTIVE_KEY.format(chat_iid=str(chat.iid))
+        join_key = _JOINS_KEY.format(chat_iid=chat_iid_str)
+        active_key = _RAID_ACTIVE_KEY.format(chat_iid=chat_iid_str)
         now_ts = datetime.now(timezone.utc).timestamp()
 
         await aredis.rpush(join_key, str(now_ts))
@@ -174,8 +214,9 @@ class RaidDetectorMiddleware(BaseMiddleware):
                 await aredis.expire(join_key, _JOINS_TTL_SECONDS)
 
         if len(recent) >= model.threshold:
-            # Mute with configured duration
+            # Mute and record so they can be bulk-unmuted later
             await mute_user(chat_tid=chat_tid, user_tid=user.id, until_date=_mute_duration(model))
+            await record_raid_mute(chat_iid_str, user.id)
             log.warning("RaidMode auto-triggered", chat=chat_tid, joins_in_window=len(recent))
 
             # Announce group + DM admins — only once per raid window
