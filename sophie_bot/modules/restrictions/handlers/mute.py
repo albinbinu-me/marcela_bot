@@ -27,7 +27,8 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Mutes the user in the chat."))
+@flags.help(description=l_("Mutes the user in the chat."),
+    example=l_("/mute @user — mute permanently\n/mute (reply)"),)
 class MuteUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -88,7 +89,8 @@ class MuteUserHandler(SophieMessageHandler):
         await self.event.reply(str(doc))
 
 
-@flags.help(description=l_("Temporarily mutes the user in the chat."))
+@flags.help(description=l_("Temporarily mutes the user in the chat."),
+    example=l_("/tmute @user 30m — mute for 30 minutes\n/tmute (reply) 2h reason"),)
 class TempMuteUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -153,7 +155,8 @@ class TempMuteUserHandler(SophieMessageHandler):
         await self.event.reply(str(doc))
 
 
-@flags.help(description=l_("Silently mutes the user from the chat. No notification will be sent."))
+@flags.help(description=l_("Silently mutes the user from the chat. No notification will be sent."),
+    example=l_("/smute @user — mute without any announcement"),)
 class SilentMuteUserHandler(MuteUserHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -198,7 +201,8 @@ class SilentMuteUserHandler(MuteUserHandler):
         )
 
 
-@flags.help(description=l_("Deletes the replied message and mutes the user."))
+@flags.help(description=l_("Deletes the replied message and mutes the user."),
+    example=l_("/dmute (reply) — delete message and mute the sender"),)
 class DeleteMuteUserHandler(MuteUserHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

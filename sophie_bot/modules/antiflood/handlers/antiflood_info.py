@@ -16,7 +16,8 @@ from sophie_bot.utils.handlers import SophieMessageHandler
 from sophie_bot.utils.i18n import LazyProxy, gettext as _, ngettext as pl_, lazy_gettext as l_
 
 
-@flags.help(description=l_("Shows antiflood protection settings"))
+@flags.help(description=l_("Shows antiflood protection settings"),
+    example=l_("/antifloodinfo — display the current flood threshold and action"),)
 class AntifloodInfoHandler(SophieMessageHandler):
     """Handler for showing antiflood information."""
 

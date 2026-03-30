@@ -8,7 +8,8 @@ from sophie_bot.modules.utils_.status_handler import StatusBoolHandlerABC
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Shows / changes the state of sending greetings"))
+@flags.help(description=l_("Shows / changes the state of sending greetings"),
+    example=l_("/welcome on — enable welcome messages\n/welcome off — disable them\n/welcome — show current state"),)
 class EnableWelcomeHandlerABC(StatusBoolHandlerABC):
     header_text = l_("Welcome messages")
     change_command = "enablewelcome"

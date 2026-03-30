@@ -17,7 +17,8 @@ LIST_CMDS = ("notes", "saved", "notelist")
 
 
 @flags.args(search=OptionalArg(TextArg(l_("?Search notes"))))
-@flags.help(description=l_("Lists available notes."))
+@flags.help(description=l_("Lists available notes."),
+    example=l_("/notes — shows all saved note names in this group"),)
 @flags.disableable(name="notes")
 class NotesList(SophieMessageHandler):
     @staticmethod

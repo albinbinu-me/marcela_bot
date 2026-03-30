@@ -21,7 +21,8 @@ from sophie_bot.filters.cmd import CMDFilter
 from sophie_bot.filters.chat_status import ChatTypeFilter
 
 
-@flags.help(description=l_("Connects to the current chat."))
+@flags.help(description=l_("Connects to the current chat."),
+    example=l_("/connect — link this group to your PM so you can run commands remotely"),)
 class ConnectGroupCmd(SophieMessageHandler):
     @staticmethod
     def filters():

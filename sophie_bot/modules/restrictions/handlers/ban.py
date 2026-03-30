@@ -28,7 +28,8 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Bans the user from the chat."))
+@flags.help(description=l_("Bans the user from the chat."),
+    example=l_("/ban @user — ban permanently\n/ban @user 2h — ban for 2 hours"),)
 class BanUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -113,7 +114,8 @@ class BanUserHandler(SophieMessageHandler):
         await self.event.reply(str(doc))
 
 
-@flags.help(description=l_("Temporarily bans the user from the chat."))
+@flags.help(description=l_("Temporarily bans the user from the chat."),
+    example=l_("/tban @user 1d — ban for 1 day\n/tban @user 6h spam — ban replied user for 6 hours"),)
 class TempBanUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -202,7 +204,8 @@ class TempBanUserHandler(SophieMessageHandler):
         await self.event.reply(str(doc))
 
 
-@flags.help(description=l_("Silently bans the user from the chat. No notification will be sent."))
+@flags.help(description=l_("Silently bans the user from the chat. No notification will be sent."),
+    example=l_("/sban @user — ban without any public message in chat"),)
 class SilentBanUserHandler(BanUserHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -247,7 +250,8 @@ class SilentBanUserHandler(BanUserHandler):
         )
 
 
-@flags.help(description=l_("Deletes the replied message and bans the user."))
+@flags.help(description=l_("Deletes the replied message and bans the user."),
+    example=l_("/dban (reply) — delete that message and ban the sender"),)
 class DeleteBanUserHandler(BanUserHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

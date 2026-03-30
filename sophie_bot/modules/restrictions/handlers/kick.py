@@ -25,7 +25,8 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Kicks the user from the chat. The user would be able to join back."))
+@flags.help(description=l_("Kicks the user from the chat. The user would be able to join back."),
+    example=l_("/kick @user — remove from group (can rejoin)\n/kick (reply)"),)
 class KickUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -85,7 +86,8 @@ class KickUserHandler(SophieMessageHandler):
         await self.event.reply(str(doc))
 
 
-@flags.help(description=l_("Silently kicks the user from the chat. No notification will be sent."))
+@flags.help(description=l_("Silently kicks the user from the chat. No notification will be sent."),
+    example=l_("/skick @user — kick without any message in chat"),)
 class SilentKickUserHandler(KickUserHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -129,7 +131,8 @@ class SilentKickUserHandler(KickUserHandler):
         )
 
 
-@flags.help(description=l_("Deletes the replied message and kicks the user."))
+@flags.help(description=l_("Deletes the replied message and kicks the user."),
+    example=l_("/dkick (reply) — delete message and kick the sender"),)
 class DeleteKickUserHandler(KickUserHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

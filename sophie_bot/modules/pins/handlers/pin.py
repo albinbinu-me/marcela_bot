@@ -12,7 +12,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Pins replied message"))
+@flags.help(
+    description=l_("Pins replied message"),
+    example=l_("/pin (reply) — pin silently\n/pin loud (reply) — pin with notification"),
+)
 class PinHandler(SophieMessageHandler):
     @staticmethod
     def filters():

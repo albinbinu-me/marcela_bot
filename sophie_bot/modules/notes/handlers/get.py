@@ -18,7 +18,8 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.args(notename=WordArg(l_("Note name")), raw=OptionalArg(OneOf("noformat", "?raw")))
-@flags.help(description=l_("Retrieve the note."))
+@flags.help(description=l_("Retrieve the note."),
+    example=l_("/get rules — shows the note named 'rules'\n#rules — shorthand to retrieve the note"),)
 class GetNote(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
