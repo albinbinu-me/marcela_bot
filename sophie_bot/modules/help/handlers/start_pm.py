@@ -3,7 +3,6 @@ from typing import Any
 from aiogram import F, Router, flags
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, LinkPreviewOptions
-from stfu_tg import Doc, Template, Url
 
 from sophie_bot.config import CONFIG
 from sophie_bot.filters.chat_status import ChatTypeFilter
@@ -24,49 +23,59 @@ class StartPMHandler(SophieMessageCallbackQueryHandler):
 
     async def handle(self) -> Any:
         state: FSMContext = self.state
-
-        # Reset current state
         await state.clear()
+
+        bot_name = CONFIG.bot_name
+
+        text = (
+            f"<b>👋 Welcome to {bot_name}!</b>\n\n"
+            f"I'm an advanced group management bot designed to keep your community safe, organised, and running smoothly.\n\n"
+            f"<b>⚡ Key Features</b>\n"
+            f"  • 🚨 Anti-Raid &amp; Anti-Flood protection\n"
+            f"  • ⚠️ Smart warning system\n"
+            f"  • 🔒 Message locks &amp; filters\n"
+            f"  • 🛡️ Captcha &amp; welcome security\n"
+            f"  • 📌 Pin management\n"
+            f"  • 🌐 Multi-language support\n\n"
+            f"Use the buttons below to get started."
+        )
 
         buttons = InlineKeyboardMarkup(
             inline_keyboard=[
+                # Primary CTA — full width
                 [
                     InlineKeyboardButton(
-                        text=_("Add me to your chat"),
+                        text=_("➕ Add me to your group"),
                         url=f"https://telegram.me/{CONFIG.username}?startgroup=true",
-                        style="success",
-                        icon_custom_emoji_id="5397916757333654639",
                     )
                 ],
+                # Navigation row
                 [
                     InlineKeyboardButton(
-                        text=_("Privacy"),
-                        callback_data=PrivacyMenuCallback(back_to_start=True).pack(),
-                        icon_custom_emoji_id="5377754411319698237",
-                    ),
-                    InlineKeyboardButton(
-                        text=_("Language"), callback_data="lang_btn", icon_custom_emoji_id="5447410659077661506"
-                    ),
-                ],
-                [
-                    InlineKeyboardButton(
-                        text=_("Help"),
+                        text=_("📖 Help & Commands"),
                         callback_data=PMHelpModules(back_to_start=True).pack(),
-                        icon_custom_emoji_id="5373098009640836781",
-                    )
+                    ),
+                    InlineKeyboardButton(
+                        text=_("🌐 Language"),
+                        callback_data="lang_btn",
+                    ),
+                ],
+                # News channel + Privacy row
+                [
+                    InlineKeyboardButton(
+                        text=_("📢 News Channel"),
+                        url=CONFIG.news_channel,
+                    ),
+                    InlineKeyboardButton(
+                        text=_("🔐 Privacy"),
+                        callback_data=PrivacyMenuCallback(back_to_start=True).pack(),
+                    ),
                 ],
             ]
         )
 
-        text = Doc(
-            Template(
-                _("Hey there! My name is {bot_name}, I help you manage your group in an efficient way!"),
-                bot_name=CONFIG.bot_name,
-            ),
-            Template(
-                _("Join our {channel}."),
-                channel=Url(_("📢 NEWS Channel"), CONFIG.news_channel),
-            ),
+        await self.answer(
+            text,
+            reply_markup=buttons,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
         )
-
-        await self.answer(str(text), reply_markup=buttons, link_preview_options=LinkPreviewOptions(is_disabled=True))
