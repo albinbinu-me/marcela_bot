@@ -286,7 +286,9 @@ class PMHelpQuery(SophieMessageCallbackQueryHandler):
 
 @flags.help(exclude=True)
 class PMCommandExampleHandler(CallbackQueryHandler):
-    """Shows the usage example for a specific command when the 💡 Show Example button is tapped."""
+    """Shows the usage example for a specific command when the 💡 Show Example button is tapped.
+    Edits the existing message in-place to avoid PM spam.
+    """
 
     @classmethod
     def register(cls, router: Router):
@@ -307,14 +309,44 @@ class PMCommandExampleHandler(CallbackQueryHandler):
             str(matched.example),
         )
 
+        # Find which module owns this command so we can wire the Back button
+        owner_module_name: Optional[str] = None
+        for mod_name, mod in HELP_MODULES.items():
+            if any(matched is h for h in mod.handlers):
+                owner_module_name = mod_name
+                break
+
+        buttons = InlineKeyboardBuilder()
+        if owner_module_name:
+            buttons.row(
+                InlineKeyboardButton(
+                    text=_("⬅️ Back"),
+                    callback_data=PMHelpModule(module_name=owner_module_name, back_to_start=False).pack(),
+                )
+            )
+        else:
+            buttons.row(
+                InlineKeyboardButton(
+                    text=_("⬅️ Back to Help"),
+                    callback_data=PMHelpModules(back_to_start=False).pack(),
+                )
+            )
+
         await self.event.answer()
         if self.event.message and isinstance(self.event.message, Message):
-            await self.event.message.answer(str(example_text))
+            # Edit in-place — no new message spawned
+            await self.event.message.edit_text(
+                str(example_text),
+                reply_markup=buttons.as_markup(),
+                disable_web_page_preview=True,
+            )
 
 
 @flags.help(exclude=True)
 class PMModuleExamplesHandler(CallbackQueryHandler):
-    """Shows all command examples for a module when the 💡 Show Examples button is tapped."""
+    """Shows all command examples for a module when the 💡 Show Examples button is tapped.
+    Edits the existing message in-place to avoid PM spam.
+    """
 
     @classmethod
     def register(cls, router: Router):
@@ -342,7 +374,7 @@ class PMModuleExamplesHandler(CallbackQueryHandler):
                 title=f"/{primary}",
             )
 
-        # Button to go back to this module's help
+        # Back button returns to the module's help view
         buttons = InlineKeyboardBuilder()
         buttons.row(
             InlineKeyboardButton(
@@ -353,4 +385,9 @@ class PMModuleExamplesHandler(CallbackQueryHandler):
 
         await self.event.answer()
         if self.event.message and isinstance(self.event.message, Message):
-            await self.event.message.answer(str(doc), reply_markup=buttons.as_markup())
+            # Edit in-place — no new message spawned
+            await self.event.message.edit_text(
+                str(doc),
+                reply_markup=buttons.as_markup(),
+                disable_web_page_preview=True,
+            )
