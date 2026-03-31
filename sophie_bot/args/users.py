@@ -75,8 +75,8 @@ class SophieUserArg(OrArg):
     def examples(self) -> dict[str, LazyProxy | None] | None:
         return {
             "1111224224": l_("User ID"),
-            "@ofoxr_bot": l_("Username"),
-            UserLink(user_id=1111224224, name="OrangeFox BOT"): l_(
+            "@albin": l_("Username"),
+            UserLink(user_id=1111224224, name="Albin"): l_(
                 "A link to user, usually creates by mentioning a user without username."
             ),
         }  # ty:ignore[invalid-return-type]

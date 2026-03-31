@@ -13,6 +13,7 @@ from .handlers.list import NotesList
 from .handlers.pmnotes_handler import (
     PrivateNotesConnectHandler,
     PrivateNotesRedirectHandler,
+    PrivateNoteConnectHandler,
 )
 from .handlers.pmnotes_setting import PMNotesControl, PMNotesStatus
 from .handlers.save import SaveNote
@@ -58,6 +59,7 @@ async def __pre_setup__():
 
     router.message.register(PrivateNotesConnectHandler, *PrivateNotesConnectHandler.filters())
     router.message.register(PrivateNotesRedirectHandler, *PrivateNotesRedirectHandler.filters())
+    router.message.register(PrivateNoteConnectHandler, *PrivateNoteConnectHandler.filters())
 
     router.message.register(NotesList, *NotesList.filters())
     router.message.register(GetNote, *GetNote.filters())

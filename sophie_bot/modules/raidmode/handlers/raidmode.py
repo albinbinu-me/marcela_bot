@@ -30,7 +30,11 @@ class RaidModeHandler(StatusBoolHandlerABC):
 
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
-        return CMDFilter(("raidmode", "raid")), UserRestricting(admin=True), BotHasPermissions(can_restrict_members=True)
+        return (
+            CMDFilter(("raidmode", "raid")),
+            UserRestricting(admin=True),
+            BotHasPermissions(can_restrict_members=True),
+        )
 
     async def get_status(self) -> bool:
         model = await RaidModeModel.get_by_chat_iid(self.connection.db_model.iid)
@@ -46,8 +50,7 @@ class RaidModeHandler(StatusBoolHandlerABC):
 
         state_label = _("🔴 Enabled") if model.enabled else _("🟢 Disabled (auto-detect active)")
         duration_label = (
-            _("indefinitely") if model.auto_mute_minutes <= 0
-            else _("{n} minutes").format(n=model.auto_mute_minutes)
+            _("indefinitely") if model.auto_mute_minutes <= 0 else _("{n} minutes").format(n=model.auto_mute_minutes)
         )
 
         text = (
@@ -87,7 +90,9 @@ class RaidModeHandler(StatusBoolHandlerABC):
 
 @flags.help(
     description=l_("Sets how long (in minutes) new members are muted during a raid. Use 0 for indefinite."),
-    example=l_("/raidmute 30 — mute new joiners for 30 minutes\n/raidmute 0 — mute indefinitely\n/raidmute — show current duration"),
+    example=l_(
+        "/raidmute 30 — mute new joiners for 30 minutes\n/raidmute 0 — mute indefinitely\n/raidmute — show current duration"
+    ),
 )
 class RaidMuteDurationHandler(SophieMessageHandler):
     @staticmethod
@@ -105,7 +110,9 @@ class RaidMuteDurationHandler(SophieMessageHandler):
         if minutes is None:
             # Show current setting
             duration_label = (
-                _("indefinitely") if model.auto_mute_minutes <= 0 else _("{n} minutes").format(n=model.auto_mute_minutes)
+                _("indefinitely")
+                if model.auto_mute_minutes <= 0
+                else _("{n} minutes").format(n=model.auto_mute_minutes)
             )
             doc = Section(
                 KeyValue(_("Current mute duration"), Bold(duration_label)),
@@ -121,9 +128,7 @@ class RaidMuteDurationHandler(SophieMessageHandler):
         model.auto_mute_minutes = minutes
         await model.save()
 
-        duration_label = (
-            _("indefinitely") if minutes == 0 else _("{n} minutes").format(n=minutes)
-        )
+        duration_label = _("indefinitely") if minutes == 0 else _("{n} minutes").format(n=minutes)
         doc = Section(
             _("Raid mute duration updated."),
             KeyValue(_("New duration"), Bold(duration_label)),
@@ -177,5 +182,6 @@ class RaidModeToggleCallbackHandler(SophieCallbackQueryHandler):
 
         if self.event.message:
             from aiogram.types import Message as AiogramMessage
+
             if isinstance(self.event.message, AiogramMessage):
                 await self.event.message.edit_reply_markup(reply_markup=buttons.as_markup())

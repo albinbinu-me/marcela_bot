@@ -1,30 +1,32 @@
+from __future__ import annotations
+
 from typing import Any
 
 from aiogram import flags
 from aiogram.dispatcher.event.handler import CallbackType
-from aiogram.handlers import MessageHandler
 from ass_tg.types import BooleanArg
 from stfu_tg import Bold, Doc, Italic, KeyValue, Section, Template
 
-from sophie_bot.db.models import PrivateNotesModel
+from sophie_bot.db.models.private_rules import PrivateRulesModel
 from sophie_bot.filters.admin_rights import UserRestricting
 from sophie_bot.filters.chat_status import ChatTypeFilter
 from sophie_bot.filters.cmd import CMDFilter
 from sophie_bot.filters.message_status import HasArgs
 from sophie_bot.middlewares.connections import ChatConnection
 from sophie_bot.utils.exception import SophieException
+from sophie_bot.utils.handlers import SophieMessageHandler
 from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.help(
-    description=l_("Show current state of Private Notes"),
-    example=l_("/pmnotes — check if private notes mode is enabled or disabled"),
+    description=l_("Show current state of Private Rules"),
+    example=l_("/privaterules — check if private rules mode is enabled or disabled"),
 )
-class PMNotesStatus(MessageHandler):
+class PrivateRulesStatus(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
-        return CMDFilter(("pmnotes", "privatenotes")), ~ChatTypeFilter("private")
+        return CMDFilter(("privaterules", "privatrules")), ~ChatTypeFilter("private"), ~HasArgs(True)
 
     async def handle(self) -> Any:
         connection: ChatConnection = self.data["connection"]
@@ -32,15 +34,15 @@ class PMNotesStatus(MessageHandler):
         if not connection.db_model:
             raise SophieException("Chat has no database model saved.")
 
-        state = await PrivateNotesModel.get_state(connection.db_model.iid)
+        state = await PrivateRulesModel.get_state(connection.db_model.iid)
 
         doc = Doc(
             Section(
                 KeyValue(_("Chat"), connection.title),
                 KeyValue(_("Current state"), _("Enabled") if state else _("Disabled")),
-                title=_("Private Notes"),
+                title=_("Private Rules"),
             ),
-            Template(_("Use '{cmd}' to change it."), cmd=Italic("/pmnotes (on / off)")),
+            Template(_("Use '{cmd}' to change it."), cmd=Italic("/privaterules (on / off)")),
         )
 
         await self.event.reply(str(doc), disable_web_page_preview=True)
@@ -48,14 +50,16 @@ class PMNotesStatus(MessageHandler):
 
 @flags.args(new_state=BooleanArg(l_("New state")))
 @flags.help(
-    description=l_("Control Private Notes — when enabled, getting a note sends a PM button instead of showing inline"),
-    example=l_("/pmnotes on — enable private notes mode\n/pmnotes off — disable private notes mode (default)"),
+    description=l_("Control Private Rules — when enabled, /rules sends a PM button instead of showing inline"),
+    example=l_(
+        "/privaterules on — enable private rules mode\n/privaterules off — disable private rules mode (default)"
+    ),
 )
-class PMNotesControl(MessageHandler):
+class PrivateRulesControl(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
         return (
-            CMDFilter(("pmnotes", "privatenotes")),
+            CMDFilter(("privaterules", "privatrules")),
             ~ChatTypeFilter("private"),
             HasArgs(True),
             UserRestricting(admin=True),
@@ -68,14 +72,16 @@ class PMNotesControl(MessageHandler):
         if not connection.db_model:
             raise SophieException("Chat has no database model saved.")
 
-        await PrivateNotesModel.set_state(connection.db_model.iid, new_state)
+        await PrivateRulesModel.set_state(connection.db_model.iid, new_state)
 
         status_text = _("enabled") if new_state else _("disabled")
 
         doc = Doc(
             Bold(
                 Template(
-                    _("PrivateNotes have been {status} in {chat}."), status=status_text.lower(), chat=connection.title
+                    _("Private Rules have been {status} in {chat}."),
+                    status=status_text.lower(),
+                    chat=connection.title,
                 )
             )
         )

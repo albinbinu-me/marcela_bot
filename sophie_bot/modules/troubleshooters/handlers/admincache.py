@@ -26,10 +26,10 @@ class ResetAdminCache(SophieMessageHandler):
 
         # Hard wipe MongoDB admin cache for this chat
         await ChatAdminModel.find(ChatAdminModel.chat.id == self.connection.db_model.iid).delete()
-        
+
         # Hard wipe Redis cache keys containing admin permissions
         await aredis.delete(f"admincache:{self.connection.tid}")
-        
+
         # Pull fresh admins and reconstruct the cache map
         await update_chat_members(self.connection.db_model)
         await self.event.reply(_("Admin rights cache has been reset."))

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from typing import Optional
 
 from beanie import Document, PydanticObjectId
-from pydantic import Field
 
 from sophie_bot.db.models._link_type import Link
 from sophie_bot.db.models.chat import ChatModel

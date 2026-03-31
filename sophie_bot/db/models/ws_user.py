@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from beanie import Document, PydanticObjectId, UpdateResponse
-from beanie.odm.operators.update.general import Set
+from beanie import Document, PydanticObjectId
 
 from sophie_bot.db.models import ChatModel
 from sophie_bot.db.models._link_type import Link

@@ -17,7 +17,6 @@ from sophie_bot.metrics.external import (
 )
 from sophie_bot.metrics.middleware import MetricsMiddleware
 from sophie_bot.metrics.prom import (
-    SophieMetrics,
     aiohttp_handler,
     create_registry,
     make_metrics,

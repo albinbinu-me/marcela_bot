@@ -12,7 +12,13 @@ from ...utils.logger import log
 from .callbacks import PMHelpModule
 from .handlers.help_group import HelpGroupHandler
 from .handlers.op import OpCMDSList
-from .handlers.pm_modules import PMModuleHelp, PMModulesList, PMHelpQuery, PMCommandExampleHandler, PMModuleExamplesHandler
+from .handlers.pm_modules import (
+    PMModuleHelp,
+    PMModulesList,
+    PMHelpQuery,
+    PMCommandExampleHandler,
+    PMModuleExamplesHandler,
+)
 from .handlers.set_lang_legacy import set_lang_cb
 from .handlers.start_group import StartGroupHandler
 from .handlers.start_pm import StartPMHandler

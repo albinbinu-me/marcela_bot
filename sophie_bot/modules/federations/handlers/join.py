@@ -19,8 +19,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Join a chat to a federation"),
-    example=l_("/joinfed <fed_id> — link this group to the specified federation"),)
+@flags.help(
+    description=l_("Join a chat to a federation"),
+    example=l_("/joinfed <fed_id> — link this group to the specified federation"),
+)
 class JoinFederationHandler(SophieMessageHandler):
     """Handler for joining chats to federations."""
 

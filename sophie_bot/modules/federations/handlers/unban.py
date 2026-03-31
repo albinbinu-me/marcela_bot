@@ -21,8 +21,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Unban a user from the federation"),
-    example=l_("/unfban @user — lift the federation ban on a user"),)
+@flags.help(
+    description=l_("Unban a user from the federation"),
+    example=l_("/unfban @user — lift the federation ban on a user"),
+)
 class FederationUnbanHandler(FederationCommandHandler):
     """Handler for unbanning users from federations."""
 

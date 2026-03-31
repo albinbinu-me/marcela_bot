@@ -12,6 +12,8 @@ from sophie_bot.modules.rules.handlers.reset import ResetRulesHandler
 from sophie_bot.modules.rules.handlers.set import SetRulesHandler
 from sophie_bot.modules.rules.magic_handlers.filter import get_filter
 from sophie_bot.modules.rules.magic_handlers.modern_filter import SendRulesAction
+from sophie_bot.modules.rules.handlers.private_rules_setting import PrivateRulesStatus, PrivateRulesControl
+from sophie_bot.modules.rules.handlers.pm_rules_handler import PrivateRulesConnectHandler
 
 __all__ = ("api_router",)
 
@@ -38,4 +40,7 @@ __handlers__ = (
     GetRulesHandler,
     ResetRulesHandler,
     LegacyRulesButton,
+    PrivateRulesStatus,
+    PrivateRulesControl,
+    PrivateRulesConnectHandler,
 )

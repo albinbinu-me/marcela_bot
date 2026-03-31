@@ -20,12 +20,11 @@ from sophie_bot.modules.logging.events import LogEvent
 from sophie_bot.modules.logging.utils import log_event
 from sophie_bot.modules.utils_.admin import is_user_admin
 from sophie_bot.modules.utils_.common_try import common_try
-from sophie_bot.modules.utils_.get_user import get_arg_or_reply_user, get_union_user
+from sophie_bot.modules.utils_.get_user import get_arg_or_reply_user
 from sophie_bot.modules.utils_.message import is_real_reply
 from sophie_bot.modules.warns.callbacks import DeleteWarnCallback
 from sophie_bot.modules.warns.utils import warn_user
 from sophie_bot.utils.handlers import SophieMessageHandler
-from sophie_bot.utils.exception import SophieException
 from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
@@ -117,7 +116,9 @@ class WarnHandler(SophieMessageHandler):
             {"target_user_id": target_user.tid, "reason": reason, "current": current, "limit": limit},
         )
 
-        doc = _build_warn_doc(target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment)
+        doc = _build_warn_doc(
+            target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment
+        )
 
         builder = InlineKeyboardBuilder()
         if await RulesModel.get_rules(connection.db_model.iid):
@@ -213,7 +214,9 @@ class SilentWarnHandler(WarnHandler):
         )
 
         # DM the acting admin so they get confirmation + reason summary
-        doc = _build_warn_doc(target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment)
+        doc = _build_warn_doc(
+            target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment
+        )
         doc_text = _("🔇 <b>Silent warn applied</b>\n") + doc.to_html()
         with suppress(Exception):
             await self.bot.send_message(chat_id=message.from_user.id, text=doc_text, parse_mode="HTML")
@@ -287,7 +290,9 @@ class DeleteWarnHandler(WarnHandler):
         )
 
         # Always send the full warn doc (consistent with /warn)
-        doc = _build_warn_doc(target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment)
+        doc = _build_warn_doc(
+            target_user, message.from_user.id, message.from_user.first_name, current, limit, reason, punishment
+        )
 
         builder = InlineKeyboardBuilder()
         if await RulesModel.get_rules(connection.db_model.iid):

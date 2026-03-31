@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from aiogram import flags
@@ -29,7 +30,7 @@ class HelpGroupHandler(SophieMessageHandler):
             query = args[1].lower().strip()
             if query.startswith("/"):
                 query = query[1:]
-                
+
             from sophie_bot.modules.help.utils.extract_info import HELP_MODULES, get_all_cmds
             from stfu_tg import Template
 
@@ -47,16 +48,15 @@ class HelpGroupHandler(SophieMessageHandler):
             if found:
                 text = Template(_("Contact me for help in PM to view help for {query}."), query=query)
                 from sophie_bot.modules.help.callbacks import PMHelpQueryStartUrlCallback
-                cb_url = PMHelpQueryStartUrlCallback(query=query).pack()
+
+                # The telegram start parameter cannot contain spaces, so we slugify the query.
+                slugified_query = re.sub(r"[\s_]+", "", query)
+                cb_url = PMHelpQueryStartUrlCallback(query=slugified_query).pack()
             else:
                 text = Template(_("{query} command not found refer help to view all commands"), query=query)
                 cb_url = PMHelpStartUrlCallback().pack()
 
-            buttons.add(
-                InlineKeyboardButton(
-                    text=_("Contact me for help in PM"), url=cb_url
-                )
-            )
+            buttons.add(InlineKeyboardButton(text=_("Contact me for help in PM"), url=cb_url))
         else:
             text = _("Contact me for help in PM")
             buttons.add(InlineKeyboardButton(text=_("Contact me for help in PM"), url=PMHelpStartUrlCallback().pack()))

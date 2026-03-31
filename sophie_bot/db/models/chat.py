@@ -189,11 +189,11 @@ class ChatModel(Document):
     async def upsert_user(user: User) -> "ChatModel":
         async with upsert_user_lock:
             data = ChatModel._get_user_data(user)
-            
+
             language_code = data.pop("language_code", None)
             insert_data = data.copy()
             insert_data["language_code"] = language_code
-            
+
             return await ChatModel.find_one(ChatModel.tid == user.id).upsert(
                 Set(data), on_insert=ChatModel(tid=user.id, **insert_data), response_type=UpdateResponse.NEW_DOCUMENT
             )

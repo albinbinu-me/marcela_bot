@@ -12,8 +12,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_, gettext as _
 from sophie_bot.filters.cmd import CMDFilter
 
 
-@flags.help(description=l_("Disconnects from the current chat."),
-    example=l_("/disconnect — unlink your PM from this group"),)
+@flags.help(
+    description=l_("Disconnects from the current chat."),
+    example=l_("/disconnect — unlink your PM from this group"),
+)
 class DisconnectCmd(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

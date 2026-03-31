@@ -7,9 +7,14 @@ from ass_tg.types import OneOf, OptionalArg, WordArg
 from stfu_tg import Bold, HList, Italic, Template, Title
 from stfu_tg.doc import Element
 
-from sophie_bot.db.models import NoteModel
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from sophie_bot.db.models import NoteModel, PrivateNotesModel
+from sophie_bot.db.models.chat import ChatType
 from sophie_bot.filters.cmd import CMDFilter
 from sophie_bot.middlewares.connections import ChatConnection
+from sophie_bot.modules.notes.callbacks import PrivateNoteStartUrlCallback
 from sophie_bot.modules.notes.utils.combine import combine_saveables
 from sophie_bot.modules.notes.utils.send import send_saveable
 from sophie_bot.utils.handlers import SophieMessageHandler
@@ -18,8 +23,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.args(notename=WordArg(l_("Note name")), raw=OptionalArg(OneOf("noformat", "?raw")))
-@flags.help(description=l_("Retrieve the note."),
-    example=l_("/get rules — shows the note named 'rules'\n#rules — shorthand to retrieve the note"),)
+@flags.help(
+    description=l_("Retrieve the note."),
+    example=l_("/get rules — shows the note named 'rules'\n#rules — shorthand to retrieve the note"),
+)
 class GetNote(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
@@ -37,6 +44,20 @@ class GetNote(SophieMessageHandler):
             )
         elif not note:
             return
+
+        if not chat.is_connected and chat.type != ChatType.private:
+            if await PrivateNotesModel.get_state(chat.db_model.iid):
+                buttons = InlineKeyboardBuilder()
+                buttons.add(
+                    InlineKeyboardButton(
+                        text=_("Contact me"),
+                        url=PrivateNoteStartUrlCallback(chat_id=chat.tid, note_name=note_name).pack(),
+                    )
+                )
+                text = Template(
+                    _("Contact me to get the result of {notename} from {chat}"), notename=note_name, chat=chat.title
+                ).to_html()
+                return await self.event.reply(text, reply_markup=buttons.as_markup())
 
         title = Bold(HList(Title(f"📗 #{note_name}", bold=False), note.description or ""))
 
@@ -89,6 +110,28 @@ class HashtagGetNote(SophieMessageHandler):
 
         if not notes_to_stack:
             return
+
+        chat: ChatConnection = self.data["connection"]
+
+        if not chat.is_connected and chat.type != ChatType.private:
+            if await PrivateNotesModel.get_state(chat.db_model.iid):
+                buttons = InlineKeyboardBuilder()
+
+                # if multiple, we just link to first note for simplicity, or we could link to notes list.
+                # Since we can't deep link multiple easily, let's just do first match.
+                first_note_name = notes_to_stack[0].names[0]
+                buttons.add(
+                    InlineKeyboardButton(
+                        text=_("Contact me"),
+                        url=PrivateNoteStartUrlCallback(chat_id=chat.tid, note_name=first_note_name).pack(),
+                    )
+                )
+                text = Template(
+                    _("Contact me to get the result of {notename} from {chat}"),
+                    notename=first_note_name,
+                    chat=chat.title,
+                ).to_html()
+                return await self.event.reply(text, reply_markup=buttons.as_markup())
 
         # Limit to 3 first items
         if len(notes_to_stack) > 3:

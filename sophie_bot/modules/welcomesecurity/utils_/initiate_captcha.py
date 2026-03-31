@@ -61,10 +61,9 @@ async def initiate_captcha(
     )
 
     # Save captcha data to user's FSM state so it can be solved/shifted
-    await FSMContext(
-        storage=dp.storage,
-        key=StorageKey(bot_id=bot.id, chat_id=user.tid, user_id=user.tid)
-    ).update_data({"captcha": captcha.data.model_dump(), "ws_chat_iid": str(group.iid)})
+    await FSMContext(storage=dp.storage, key=StorageKey(bot_id=bot.id, chat_id=user.tid, user_id=user.tid)).update_data(
+        {"captcha": captcha.data.model_dump(), "ws_chat_iid": str(group.iid)}
+    )
 
     # DM mode: send to user's DM
     return await bot.send_photo(

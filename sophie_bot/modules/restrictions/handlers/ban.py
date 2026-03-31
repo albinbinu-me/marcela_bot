@@ -114,12 +114,22 @@ class BanUserHandler(SophieMessageHandler):
             return await self.event.reply(_("Failed to ban the user. Make sure I have the right permissions."))
 
         reason = self.data.get("reason")
-        await log_event(connection.tid, self.event.from_user.id, LogEvent.USER_BANNED, {"target_user_id": user.chat_id, "reason": reason})
+        await log_event(
+            connection.tid,
+            self.event.from_user.id,
+            LogEvent.USER_BANNED,
+            {"target_user_id": user.chat_id, "reason": reason},
+        )
 
         doc = _build_ban_doc(
-            _("User banned"), connection.title, user.chat_id, user.first_name,
-            self.event.from_user.id, self.event.from_user.first_name,
-            reason, fed_info=fed_info,
+            _("User banned"),
+            connection.title,
+            user.chat_id,
+            user.first_name,
+            self.event.from_user.id,
+            self.event.from_user.first_name,
+            reason,
+            fed_info=fed_info,
         )
         await self.event.reply(str(doc))
 
@@ -168,12 +178,24 @@ class TempBanUserHandler(SophieMessageHandler):
             return await self.event.reply(_("Failed to ban the user. Make sure I have the right permissions."))
 
         reason = self.data.get("reason")
-        await log_event(connection.tid, self.event.from_user.id, LogEvent.USER_BANNED, {"target_user_id": user.chat_id, "reason": reason, "duration": until_date.total_seconds()})
+        await log_event(
+            connection.tid,
+            self.event.from_user.id,
+            LogEvent.USER_BANNED,
+            {"target_user_id": user.chat_id, "reason": reason, "duration": until_date.total_seconds()},
+        )
 
         doc = _build_ban_doc(
-            _("User temporarily banned"), connection.title, user.chat_id, user.first_name,
-            self.event.from_user.id, self.event.from_user.first_name,
-            reason, duration=until_date, locale=self.current_locale, fed_info=fed_info,
+            _("User temporarily banned"),
+            connection.title,
+            user.chat_id,
+            user.first_name,
+            self.event.from_user.id,
+            self.event.from_user.first_name,
+            reason,
+            duration=until_date,
+            locale=self.current_locale,
+            fed_info=fed_info,
         )
         await self.event.reply(str(doc))
 
@@ -218,12 +240,22 @@ class SilentBanUserHandler(BanUserHandler):
             return
 
         reason = self.data.get("reason")
-        await log_event(connection.tid, self.event.from_user.id, LogEvent.USER_BANNED, {"target_user_id": user.chat_id, "reason": reason})
+        await log_event(
+            connection.tid,
+            self.event.from_user.id,
+            LogEvent.USER_BANNED,
+            {"target_user_id": user.chat_id, "reason": reason},
+        )
 
         # DM the acting admin with action details
         doc = _build_ban_doc(
-            _("🔇 Silent Ban Applied"), connection.title, user.chat_id, user.first_name,
-            self.event.from_user.id, self.event.from_user.first_name, reason,
+            _("🔇 Silent Ban Applied"),
+            connection.title,
+            user.chat_id,
+            user.first_name,
+            self.event.from_user.id,
+            self.event.from_user.first_name,
+            reason,
         )
         with suppress(Exception):
             await self.bot.send_message(chat_id=self.event.from_user.id, text=str(doc))
@@ -271,11 +303,21 @@ class DeleteBanUserHandler(BanUserHandler):
             return await self.event.reply(_("Failed to ban the user. Make sure I have the right permissions."))
 
         reason = self.data.get("reason")
-        await log_event(connection.tid, self.event.from_user.id, LogEvent.USER_BANNED, {"target_user_id": user.chat_id, "reason": reason})
+        await log_event(
+            connection.tid,
+            self.event.from_user.id,
+            LogEvent.USER_BANNED,
+            {"target_user_id": user.chat_id, "reason": reason},
+        )
 
         # Always show the full rich doc (same format as /ban)
         doc = _build_ban_doc(
-            _("User banned"), connection.title, user.chat_id, user.first_name,
-            self.event.from_user.id, self.event.from_user.first_name, reason,
+            _("User banned"),
+            connection.title,
+            user.chat_id,
+            user.first_name,
+            self.event.from_user.id,
+            self.event.from_user.first_name,
+            reason,
         )
         await self.event.reply(str(doc))

@@ -1,4 +1,3 @@
-import asyncio
 from sophie_bot.modules.welcomesecurity.utils_.emoji_captcha import EmojiCaptcha
 
 def test():

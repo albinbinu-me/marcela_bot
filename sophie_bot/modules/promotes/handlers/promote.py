@@ -21,8 +21,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Promotes the user to admins."),
-    example=l_("/promote @user — give admin rights\n/promote @user Moderator — promote with a custom title"),)
+@flags.help(
+    description=l_("Promotes the user to admins."),
+    example=l_("/promote @user — give admin rights\n/promote @user Moderator — promote with a custom title"),
+)
 class PromoteUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

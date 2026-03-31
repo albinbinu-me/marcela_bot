@@ -85,7 +85,9 @@ class PrivacyPolicyMenu(BaseHandler[Message | CallbackQuery]):
         # 2-column grid
         row = []
         for name, sec_id in sections:
-            row.append(InlineKeyboardButton(text=name, callback_data=PrivacyPolicySectionCallback(section=sec_id).pack()))
+            row.append(
+                InlineKeyboardButton(text=name, callback_data=PrivacyPolicySectionCallback(section=sec_id).pack())
+            )
             if len(row) == 2:
                 buttons.row(*row)
                 row = []

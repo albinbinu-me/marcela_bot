@@ -58,7 +58,7 @@ class AllUsersListHandler(SophieCallbackQueryHandler):
         if not self.event.message or isinstance(self.event.message, InaccessibleMessage):
             return
 
-        await cast(CallbackQuery, self.event).answer(_("Generating list…"))
+        await cast(CallbackQuery, self.event).answer(_("Generating list…"))  # type: ignore
 
         users = await ChatModel.find(ChatModel.type == ChatType.private).to_list()
 

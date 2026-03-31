@@ -10,5 +10,10 @@ class PrivateNotesStartUrlCallback(CmdStart, prefix="pmnotes"):
     chat_id: int
 
 
+class PrivateNoteStartUrlCallback(CmdStart, prefix="pmnote"):
+    chat_id: int
+    note_name: str
+
+
 class DeleteAllNotesCallback(CallbackData, prefix="delete_all_notes"):
     user_id: int

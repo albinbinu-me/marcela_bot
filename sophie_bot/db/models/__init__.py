@@ -29,6 +29,7 @@ from sophie_bot.db.models.log import LogModel
 from sophie_bot.db.models.migrations import MigrationState
 from sophie_bot.db.models.notes import NoteModel
 from sophie_bot.db.models.privatenotes import PrivateNotesModel
+from sophie_bot.db.models.private_rules import PrivateRulesModel
 from sophie_bot.db.models.refresh_token import RefreshTokenModel
 from sophie_bot.db.models.rules import RulesModel
 from sophie_bot.db.models.settings_keyvalue import GlobalSettings
@@ -74,4 +75,5 @@ models: List[Type[Document]] = [
     FederationExportTask,
     RefreshTokenModel,
     RaidModeModel,
+    PrivateRulesModel,
 ]

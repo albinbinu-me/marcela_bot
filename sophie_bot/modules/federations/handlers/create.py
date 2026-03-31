@@ -22,8 +22,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Create a new federation"),
-    example=l_("/newfed My Federation — creates a new federation with that name"),)
+@flags.help(
+    description=l_("Create a new federation"),
+    example=l_("/newfed My Federation — creates a new federation with that name"),
+)
 class CreateFederationHandler(SophieMessageHandler):
     """Handler for creating new federations."""
 

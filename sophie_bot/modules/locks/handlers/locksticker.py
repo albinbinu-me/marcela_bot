@@ -14,8 +14,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Lock a sticker pack in the chat"),
-    example=l_("/locksticker (reply to sticker) — ban that specific sticker pack from the group"),)
+@flags.help(
+    description=l_("Lock a sticker pack in the chat"),
+    example=l_("/locksticker (reply to sticker) — ban that specific sticker pack from the group"),
+)
 @flags.disableable(name="locksticker")
 class LockStickerHandler(SophieMessageHandler):
     @staticmethod

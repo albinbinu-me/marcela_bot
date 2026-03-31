@@ -2,13 +2,18 @@ from typing import Any
 
 from aiogram import flags
 from aiogram.dispatcher.event.handler import CallbackType
-from stfu_tg import Bold, Title
+from stfu_tg import Bold, Title, Template
 
 from sophie_bot.db.models import RulesModel
 from sophie_bot.db.models.chat import ChatType
 from sophie_bot.filters.cmd import CMDFilter
 from sophie_bot.modules.notes.utils.send import send_saveable
 from sophie_bot.utils.handlers import SophieMessageHandler
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from sophie_bot.db.models.private_rules import PrivateRulesModel
+from sophie_bot.modules.rules.callbacks import PrivateRulesStartUrlCallback
 from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
@@ -33,6 +38,18 @@ class GetRulesHandler(SophieMessageHandler):
 
         if not rules:
             return await self.event.reply(_("No rules are set for this chat."))
+
+        if not connection.is_connected and connection.type != ChatType.private:
+            if await PrivateRulesModel.get_state(connection.db_model.iid):
+                buttons = InlineKeyboardBuilder()
+                buttons.add(
+                    InlineKeyboardButton(
+                        text=_("Contact me"),
+                        url=PrivateRulesStartUrlCallback(chat_id=connection.tid).pack(),
+                    )
+                )
+                text = Template(_("Contact me to get the rules of {chat}"), chat=connection.title).to_html()
+                return await self.event.reply(text, reply_markup=buttons.as_markup())
 
         title = Bold(Title(f"🪧 {_('Rules')}"))
 

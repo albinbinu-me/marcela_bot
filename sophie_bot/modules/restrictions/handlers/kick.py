@@ -84,9 +84,22 @@ class KickUserHandler(SophieMessageHandler):
             return await self.event.reply(_("Failed to kick the user. Make sure I have the right permissions."))
 
         reason = self.data.get("reason")
-        await log_event(connection.tid, self.event.from_user.id, LogEvent.USER_KICKED, {"target_user_id": user.chat_id, "reason": reason})
+        await log_event(
+            connection.tid,
+            self.event.from_user.id,
+            LogEvent.USER_KICKED,
+            {"target_user_id": user.chat_id, "reason": reason},
+        )
 
-        doc = _build_kick_doc(_("User kicked"), connection.title, user.chat_id, user.first_name, self.event.from_user.id, self.event.from_user.first_name, reason)
+        doc = _build_kick_doc(
+            _("User kicked"),
+            connection.title,
+            user.chat_id,
+            user.first_name,
+            self.event.from_user.id,
+            self.event.from_user.first_name,
+            reason,
+        )
         await self.event.reply(str(doc))
 
 
@@ -130,10 +143,23 @@ class SilentKickUserHandler(KickUserHandler):
             return
 
         reason = self.data.get("reason")
-        await log_event(connection.tid, self.event.from_user.id, LogEvent.USER_KICKED, {"target_user_id": user.chat_id, "reason": reason})
+        await log_event(
+            connection.tid,
+            self.event.from_user.id,
+            LogEvent.USER_KICKED,
+            {"target_user_id": user.chat_id, "reason": reason},
+        )
 
         # DM the acting admin with confirmation + reason
-        doc = _build_kick_doc(_("🔇 Silent Kick Applied"), connection.title, user.chat_id, user.first_name, self.event.from_user.id, self.event.from_user.first_name, reason)
+        doc = _build_kick_doc(
+            _("🔇 Silent Kick Applied"),
+            connection.title,
+            user.chat_id,
+            user.first_name,
+            self.event.from_user.id,
+            self.event.from_user.first_name,
+            reason,
+        )
         with suppress(Exception):
             await self.bot.send_message(chat_id=self.event.from_user.id, text=str(doc))
 
@@ -180,8 +206,21 @@ class DeleteKickUserHandler(KickUserHandler):
             return await self.event.reply(_("Failed to kick the user. Make sure I have the right permissions."))
 
         reason = self.data.get("reason")
-        await log_event(connection.tid, self.event.from_user.id, LogEvent.USER_KICKED, {"target_user_id": user.chat_id, "reason": reason})
+        await log_event(
+            connection.tid,
+            self.event.from_user.id,
+            LogEvent.USER_KICKED,
+            {"target_user_id": user.chat_id, "reason": reason},
+        )
 
         # Always show the full rich doc (same format as /kick)
-        doc = _build_kick_doc(_("User kicked"), connection.title, user.chat_id, user.first_name, self.event.from_user.id, self.event.from_user.first_name, reason)
+        doc = _build_kick_doc(
+            _("User kicked"),
+            connection.title,
+            user.chat_id,
+            user.first_name,
+            self.event.from_user.id,
+            self.event.from_user.first_name,
+            reason,
+        )
         await self.event.reply(str(doc))

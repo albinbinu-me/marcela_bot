@@ -35,8 +35,10 @@ async def delete_messages_after_delay(
     await common_try(bot.delete_messages(chat_id, message_ids))
 
 
-@flags.help(description=l_("Ban a user from the federation"),
-    example=l_("/fban @user spamming — ban user across all chats in your federation"),)
+@flags.help(
+    description=l_("Ban a user from the federation"),
+    example=l_("/fban @user spamming — ban user across all chats in your federation"),
+)
 class FederationBanHandler(FederationCommandHandler):
     """Handler for banning users from federations."""
 

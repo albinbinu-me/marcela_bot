@@ -1,3 +1,4 @@
+import re
 from typing import Any, Optional
 
 from aiogram import Router, flags
@@ -58,7 +59,6 @@ class PMModulesList(SophieMessageCallbackQueryHandler):
             ),
             width=2,
         )
-
 
         if callback_data and callback_data.back_to_start:
             buttons.row(InlineKeyboardButton(text=_("Back"), callback_data="go_to_start", style="primary"))
@@ -165,16 +165,24 @@ class PMHelpQuery(SophieMessageCallbackQueryHandler):
                 else:
                     return await self.answer("Usage: /help <query>")
 
-        # Remove emojis and strip whitespace
-        import re
-
         query = re.sub(r"[^\w\s-]", "", query).strip()
 
         if query.startswith("/"):
             query = query[1:]
 
+        # Build slug (spaces/underscores collapsed) for multi-word matching, e.g. "raid mode" -> "raidmode"
+        query_slug = re.sub(r"[\s_]+", "", query)
+
         for module_name, module in HELP_MODULES.items():
-            if module_name.lower() == query or str(module.name).lower() == query:
+            module_name_str = str(module.name).lower()
+            module_name_slug = re.sub(r"[\s_]+", "", module_name_str)
+            if (
+                module_name.lower() == query
+                or module_name_str == query
+                or module_name.lower() == query_slug
+                or module_name_slug == query
+                or module_name_slug == query_slug
+            ):
                 cmds = list(filter(lambda x: not x.only_op, module.handlers))
 
                 doc = Doc(
@@ -265,9 +273,7 @@ class PMHelpQuery(SophieMessageCallbackQueryHandler):
                 buttons.row(
                     InlineKeyboardButton(
                         text=_("🔍 Explore Module"),
-                        callback_data=PMHelpModule(
-                            module_name=owner_module_name, back_to_start=False
-                        ).pack(),
+                        callback_data=PMHelpModule(module_name=owner_module_name, back_to_start=False).pack(),
                     )
                 )
             if matched_cmd.example:

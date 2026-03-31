@@ -22,7 +22,7 @@ from sophie_bot.modules.utils_.admin import is_user_admin
 from sophie_bot.modules.utils_.common_try import common_try
 from sophie_bot.services.bot import bot
 from sophie_bot.utils.exception import SophieException
-from sophie_bot.utils.i18n import LazyProxy
+from sophie_bot.utils.i18n import LazyProxy, gettext as _
 from sophie_bot.utils.logger import log
 
 
@@ -118,10 +118,20 @@ class EnforceFiltersMiddleware(BaseMiddleware):
             doc += " "
             doc += msg
 
-        async def send_message():
-            return await bot.send_message(chat_id=message.chat.id, text=doc.to_html())
+        text = doc.to_html()
 
-        await common_try(message.reply(doc.to_html()), reply_not_found=send_message)
+        async def send_message():
+            return await bot.send_message(chat_id=message.chat.id, text=text)
+
+        from aiogram.exceptions import TelegramBadRequest
+
+        try:
+            await common_try(message.reply(text), reply_not_found=send_message)
+        except TelegramBadRequest as e:
+            if "too long" in str(e).lower():
+                await common_try(message.reply(_("⚠️ Filter action aborted: The generated response is too long.")))
+            else:
+                raise e
 
     async def _process_filter(
         self, message: Message, data: dict[str, Any], matched_filter: FiltersModel, triggered_groups=None

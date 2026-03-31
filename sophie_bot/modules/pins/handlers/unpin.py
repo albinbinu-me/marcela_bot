@@ -15,7 +15,9 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 @flags.help(
     description=l_("Unpins message"),
-    example=l_("/unpin — unpin the latest pinned message\n/unpin (reply) — unpin specific message\n/unpin all — remove all pins"),
+    example=l_(
+        "/unpin — unpin the latest pinned message\n/unpin (reply) — unpin specific message\n/unpin all — remove all pins"
+    ),
 )
 class UnpinHandler(SophieMessageHandler):
     @staticmethod

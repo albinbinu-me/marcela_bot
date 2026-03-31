@@ -5,6 +5,7 @@ from sophie_bot.utils.i18n import LazyProxy
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 from .handlers.raidmode import RaidModeHandler, RaidModeToggleCallbackHandler, RaidMuteDurationHandler
+from .handlers.raidmode_pm import RaidModePMHandler, RaidMuteDurationPMHandler
 from .handlers.raidunmute import RaidUnmuteHandler
 from .middlewares.raid_detector import RaidDetectorMiddleware
 
@@ -29,6 +30,8 @@ __module_info__ = LazyProxy(
 __handlers__ = (
     RaidModeHandler,
     RaidMuteDurationHandler,
+    RaidModePMHandler,
+    RaidMuteDurationPMHandler,
     RaidModeToggleCallbackHandler,
     RaidUnmuteHandler,
 )

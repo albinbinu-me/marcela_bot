@@ -20,8 +20,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Show currently locked message types in the chat"),
-    example=l_("/locklist — see which message types are currently blocked in this group"),)
+@flags.help(
+    description=l_("Show currently locked message types in the chat"),
+    example=l_("/locklist — see which message types are currently blocked in this group"),
+)
 @flags.disableable(name="locks")
 class LocksListHandler(SophieMessageHandler):
     @staticmethod

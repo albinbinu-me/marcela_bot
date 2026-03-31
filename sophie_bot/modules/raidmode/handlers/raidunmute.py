@@ -58,6 +58,4 @@ class RaidUnmuteHandler(SophieMessageHandler):
                 )
             )
         else:
-            await self.event.reply(
-                _("✅ Successfully unmuted all {count} raid-muted user(s).").format(count=success)
-            )
+            await self.event.reply(_("✅ Successfully unmuted all {count} raid-muted user(s).").format(count=success))

@@ -77,7 +77,9 @@ async def _notify_raid(chat_tid: int, chat: ChatModel, model: RaidModeModel, joi
     )
 
     try:
-        await bot.send_message(chat_id=chat_tid, text=group_text, reply_markup=toggle_buttons.as_markup(), parse_mode="HTML")
+        await bot.send_message(
+            chat_id=chat_tid, text=group_text, reply_markup=toggle_buttons.as_markup(), parse_mode="HTML"
+        )
     except Exception as err:  # noqa: BLE001
         log.warning("RaidMode: failed to send group alert", err=err, chat=chat_tid)
 

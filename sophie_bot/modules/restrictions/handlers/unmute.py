@@ -23,8 +23,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Unmutes the user in the chat."),
-    example=l_("/unmute @user — restore the user's ability to send messages\n/unmute (reply)"),)
+@flags.help(
+    description=l_("Unmutes the user in the chat."),
+    example=l_("/unmute @user — restore the user's ability to send messages\n/unmute (reply)"),
+)
 class UnmuteUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

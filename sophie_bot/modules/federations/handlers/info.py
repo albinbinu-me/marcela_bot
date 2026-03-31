@@ -23,8 +23,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Get information about a federation"),
-    example=l_("/fedinfo — shows owner, member count and settings for the current federation"),)
+@flags.help(
+    description=l_("Get information about a federation"),
+    example=l_("/fedinfo — shows owner, member count and settings for the current federation"),
+)
 @flags.disableable(name="fedinfo")
 class FederationInfoHandler(SophieMessageHandler):
     """Handler for getting federation information."""

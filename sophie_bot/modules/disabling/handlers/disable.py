@@ -18,8 +18,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.args(cmd=WordArg(l_("Command")))
-@flags.help(description=l_("Disables the command."),
-    example=l_("/disable warn — stop the /warn command from working in this group"),)
+@flags.help(
+    description=l_("Disables the command."),
+    example=l_("/disable warn — stop the /warn command from working in this group"),
+)
 class DisableHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

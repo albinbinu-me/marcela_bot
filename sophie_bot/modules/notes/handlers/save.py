@@ -31,8 +31,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
     description=OptionalArg(SurroundedArg(TextArg(l_("?Description")))),
     text_with_buttons=OptionalArg(TextWithButtonsArg(l_("Content"))),
 )
-@flags.help(description=l_("Save the note."),
-    example=l_("/save rules Read the rules! — save a note named 'rules'\n/save welcome (reply to message)"),)
+@flags.help(
+    description=l_("Save the note."),
+    example=l_("/save rules Read the rules! — save a note named 'rules'\n/save welcome (reply to message)"),
+)
 class SaveNote(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

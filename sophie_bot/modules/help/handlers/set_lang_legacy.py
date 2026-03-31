@@ -19,5 +19,5 @@ async def set_lang_cb(event: CallbackQuery):
 
     if event.message and isinstance(event.message, Message):
         await event.message.edit_text(_("Select your language:"), reply_markup=keyboard)
-    
+
     await event.answer()

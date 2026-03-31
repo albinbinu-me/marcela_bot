@@ -109,7 +109,9 @@ class WarnActionRenderer:
 
 @flags.help(
     description=l_("Configures warn actions."),
-    example=l_("/warnaction ban — ban user when limit is reached\n/warnaction mute — mute instead of ban\n/warnaction kick"),
+    example=l_(
+        "/warnaction ban — ban user when limit is reached\n/warnaction mute — mute instead of ban\n/warnaction kick"
+    ),
 )
 class WarnActionHandler(SophieMessageHandler):
     @staticmethod

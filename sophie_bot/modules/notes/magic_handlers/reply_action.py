@@ -72,7 +72,7 @@ class ReplyModernAction(ModernActionABC[Saveable]):
 
         if filter_data.buttons or filter_data.file:
             # We have to send the note separately
-            return await common_try(
+            await common_try(
                 send_saveable(
                     message,
                     message.chat.id,
@@ -81,6 +81,7 @@ class ReplyModernAction(ModernActionABC[Saveable]):
                     reply_to=message.message_id,
                 )
             )
+            return None
 
         return Doc(
             title,

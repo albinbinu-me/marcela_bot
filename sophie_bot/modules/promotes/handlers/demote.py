@@ -20,8 +20,10 @@ from sophie_bot.utils.i18n import gettext as _
 from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
-@flags.help(description=l_("Demotes the user from admins."),
-    example=l_("/demote @user — remove admin rights\n/demote (reply)"),)
+@flags.help(
+    description=l_("Demotes the user from admins."),
+    example=l_("/demote @user — remove admin rights\n/demote (reply)"),
+)
 class DemoteUserHandler(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:

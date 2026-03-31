@@ -18,8 +18,10 @@ from sophie_bot.utils.i18n import lazy_gettext as l_
 
 
 @flags.args(notename=WordArg(l_("Note name")))
-@flags.help(description=l_("Deletes notes."),
-    example=l_("/delnote rules — permanently deletes the 'rules' note"),)
+@flags.help(
+    description=l_("Deletes notes."),
+    example=l_("/delnote rules — permanently deletes the 'rules' note"),
+)
 class DelNote(SophieMessageHandler):
     @staticmethod
     def filters() -> tuple[CallbackType, ...]:
