@@ -44,11 +44,11 @@ class GetRulesHandler(SophieMessageHandler):
                 buttons = InlineKeyboardBuilder()
                 buttons.add(
                     InlineKeyboardButton(
-                        text=_("Contact me"),
+                        text=_("Contact me in PM"),
                         url=PrivateRulesStartUrlCallback(chat_id=connection.tid).pack(),
                     )
                 )
-                text = Template(_("Contact me to get the rules of {chat}"), chat=connection.title).to_html()
+                text = Template(_("Contact me in PM to get the rules of {chat}"), chat=connection.title).to_html()
                 return await self.event.reply(text, reply_markup=buttons.as_markup())
 
         title = Bold(Title(f"🪧 {_('Rules')}"))

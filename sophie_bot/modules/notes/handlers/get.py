@@ -50,7 +50,7 @@ class GetNote(SophieMessageHandler):
                 buttons = InlineKeyboardBuilder()
                 buttons.add(
                     InlineKeyboardButton(
-                        text=_("Contact me"),
+                        text=_("Contact me in PM"),
                         url=PrivateNoteStartUrlCallback(chat_id=chat.tid, note_name=note_name).pack(),
                     )
                 )
@@ -122,7 +122,7 @@ class HashtagGetNote(SophieMessageHandler):
                 first_note_name = notes_to_stack[0].names[0]
                 buttons.add(
                     InlineKeyboardButton(
-                        text=_("Contact me"),
+                        text=_("Contact me in PM"),
                         url=PrivateNoteStartUrlCallback(chat_id=chat.tid, note_name=first_note_name).pack(),
                     )
                 )

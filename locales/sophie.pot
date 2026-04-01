@@ -3365,7 +3365,7 @@ msgstr ""
 
 #: sophie_bot/modules/notes/handlers/get.py:58
 #: sophie_bot/modules/notes/handlers/get.py:130
-msgid "Contact me to get the result of {notename} from {chat}"
+msgid "Contact me to get the result of #{notename} from {chat}"
 msgstr ""
 
 #: sophie_bot/modules/notes/handlers/list.py:19
